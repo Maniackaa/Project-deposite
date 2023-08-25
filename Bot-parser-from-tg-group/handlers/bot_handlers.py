@@ -70,7 +70,7 @@ async def sms_receiver(message: Message, bot: Bot):
             await send_alarm_to_admin(text, errors, bot)
         print(f'{round(time.perf_counter() - start, 2)} сек.')
     except Exception as err:
-        logger.error(f'Неизвестная ошибка при распознавании сообщения\n')
+        err_log.error(f'Неизвестная ошибка при распознавании сообщения\n', exc_info=True)
         await send_alarm_to_admin(message.text, [f'\nНеизвестная ошибка при распознавании сообщения\n{message.text}\n\n{err}'], bot)
         raise err
 
@@ -132,7 +132,7 @@ async def ocr_photo(message: Message, bot: Bot):
             await send_alarm_to_admin(text, errors, bot)
         print(f'{round(time.perf_counter() - start, 2)} сек.')
     except Exception as err:
-        logger.error(f'Неизвестная ошибка при распознавании скриншота\n')
+        err_log.error(f'Неизвестная ошибка при распознавании скриншота\n', exc_info=True)
         await send_alarm_to_admin(message.text, [f'\nНеизвестная ошибка при распознавании скриншота!\n\n{err}'], bot)
         raise err
     finally:
