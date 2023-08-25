@@ -60,6 +60,11 @@ def response_operations(fields: list[str], groups: tuple[str], response_fields, 
     return result
 
 
+def float_digital(string):
+    result = ''.join([c if c in ['.', '-'] or c.isdigit() else '' for c in string])
+    return float(result)
+
+
 def response_sms1(fields: list[str], groups: tuple[str]) -> dict[str, str | float]:
     """
     Функия распознавания шаблона 1
@@ -72,8 +77,8 @@ def response_sms1(fields: list[str], groups: tuple[str]) -> dict[str, str | floa
         'response_date':    {'pos': 2, 'func': date_response},
         'sender':           {'pos': 1},
         'bank':             {'pos': 3},
-        'pay':              {'pos': 4, 'func': float},
-        'balance':          {'pos': 5, 'func': float},
+        'pay':              {'pos': 4, 'func': float_digital},
+        'balance':          {'pos': 5, 'func': float_digital},
     }
     sms_type = 'sms1'
     try:
@@ -99,8 +104,8 @@ def response_sms2(fields, groups) -> dict[str, str | float]:
         'response_date':    {'pos': 2, 'func': date_response},
         'sender':           {'pos': 1},
         'bank':             {'pos': 3},
-        'pay':              {'pos': 0, 'func': float},
-        'balance':          {'pos': 4, 'func': float},
+        'pay':              {'pos': 0, 'func': float_digital},
+        'balance':          {'pos': 4, 'func': float_digital},
     }
     sms_type = 'sms2'
     try:
@@ -110,6 +115,8 @@ def response_sms2(fields, groups) -> dict[str, str | float]:
         err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
         raise err
 
+sms2 = response_sms2(['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type'], ('-1 080.00', '4127*6869', '2023-08-22 15:17:19', 'P2P SEND- LEO APP', '569.51'))
+print(sms2)
 
 def response_sms3(fields, groups) -> dict[str, str | float]:
     """
@@ -123,8 +130,8 @@ def response_sms3(fields, groups) -> dict[str, str | float]:
         'response_date':    {'pos': 2, 'func': date_response},
         'sender':           {'pos': 1, 'func': lambda x: x.split('terminal payment')[0].strip() if 'terminal payment' in x else x},
         'bank':             {'pos': 0, 'func': lambda x: 'Hesaba medaxil'},
-        'pay':              {'pos': 0, 'func': float},
-        'balance':          {'pos': 3, 'func': float},
+        'pay':              {'pos': 0, 'func': float_digital},
+        'balance':          {'pos': 3, 'func': float_digital},
     }
     sms_type = 'sms3'
     try:

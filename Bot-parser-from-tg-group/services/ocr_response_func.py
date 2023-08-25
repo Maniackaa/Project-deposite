@@ -48,7 +48,7 @@ def response_m10(fields, groups) -> dict[str, str | float]:
     response_fields = {
         'response_date':    {'pos': 0, 'func': date_m10_response},
         'sender':           {'pos': 2},
-        'pay':              {'pos': 4, 'func': lambda x: float(''.join([c if c in ['.'] or c.isdigit() else '' for c in x]))},
+        'pay':              {'pos': 4, 'func': lambda x: float(''.join([c if c in ['.', '-'] or c.isdigit() else '' for c in x]))},
         'transaction':      {'pos': 3, 'func': int},
     }
     sms_type = 'm10'
@@ -59,4 +59,5 @@ def response_m10(fields, groups) -> dict[str, str | float]:
         err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
         raise err
 
-# response_m10(['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type'], ('25.08.2023 01:07', '+994 51 927 05 68', '+994 70 *** ** 27', '55555150', '5.00 м'))
+x = response_m10(['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type'], ('25.08.2023 01:07', '+994 51 927 05 68', '+994 70 *** ** 27', '55555150', '-1 005.00 м'))
+print(x)
