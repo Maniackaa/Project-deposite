@@ -13,22 +13,18 @@ logger, err_log = get_my_loggers()
 
 def add_pay_to_db(pay: dict):
     logger.debug(f'Добавление в базу {pay}')
-    counter = 75612731
-    while True:
-        try:
-            pay['transaction'] = counter
-            session = Session()
-            with session:
-                incoming = Incoming(**pay)
-                session.add(incoming)
-                session.commit()
-                counter += 1
-                print(counter)
-        except IntegrityError as err:
-            logger.warning(f'Транзакция уже есть')
-        except Exception as err:
-            logger.debug(f'Ошибка при добавлении в базу', exc_info=True)
-            raise err
+    try:
+        session = Session()
+        with session:
+            incoming = Incoming(**pay)
+            session.add(incoming)
+            session.commit()
+    except IntegrityError as err:
+        logger.warning(f'Транзакция уже есть')
+    except Exception as err:
+        logger.debug(f'Ошибка при добавлении в базу', exc_info=True)
+        raise err
+
 
 def check_transaction(transaction_num):
     start = time.perf_counter()
