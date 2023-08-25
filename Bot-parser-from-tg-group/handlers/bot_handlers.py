@@ -118,7 +118,8 @@ async def ocr_photo(message: Message, bot: Bot):
                 logger.info(f'Сохранено базу {responsed_pay}')
                 await message.reply(f'Добавлено в базу. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
             else:
-                await message.reply(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+                logger.debug(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+                # await message.reply(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
         else:
             for admin in conf.tg_bot.admin_ids:
                 try:
