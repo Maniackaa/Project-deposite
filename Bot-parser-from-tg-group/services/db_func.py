@@ -19,6 +19,7 @@ def add_pay_to_db(pay: dict):
             incoming = Incoming(**pay)
             session.add(incoming)
             session.commit()
+            return True
     except IntegrityError as err:
         logger.warning(f'Транзакция уже есть')
     except Exception as err:
