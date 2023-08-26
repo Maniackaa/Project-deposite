@@ -11,6 +11,22 @@ from database.db import Session, Incoming
 logger, err_log = get_my_loggers()
 
 
+def check_transaction(transaction_num) -> bool:
+    """Возвразает True если транзакция есть в базе"""
+    logger.debug(f'Проверка наличия транзакции')
+    try:
+        session = Session()
+        with session:
+            result = session.execute(select(Incoming).where(Incoming.transaction == transaction_num)).scalars().all()
+            if result:
+                logger.debug(f'Транзакция {transaction_num} найдена')
+                return True
+        return False
+    except Exception as err:
+        err_log.error('Ошибка при проверке транзакции')
+        raise err
+
+
 def add_pay_to_db(pay: dict):
     logger.debug(f'Добавление в базу {pay}')
     try:

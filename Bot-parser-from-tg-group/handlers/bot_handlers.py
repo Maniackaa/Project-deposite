@@ -10,7 +10,7 @@ from config_data.bot_conf import LOGGING_CONFIG, BASE_DIR, conf
 
 import logging.config
 
-from services.db_func import add_pay_to_db
+from services.db_func import add_pay_to_db, check_transaction
 from services.ocr_response_func import img_path_to_str, \
     response_m10
 from services.support_func import send_alarm_to_admin
@@ -115,16 +115,22 @@ async def ocr_photo(message: Message, bot: Bot):
                 break
         if text_sms_type:
             logger.debug(f'Сохраняем в базу {responsed_pay}')
-            if add_pay_to_db(responsed_pay):
-                logger.info(f'Сохранено базу {responsed_pay}')
-                await message.reply(f'Добавлено в базу. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+            if check_transaction(responsed_pay['transaction']):
+                # робуем добавлять в базу
+                if add_pay_to_db(responsed_pay):
+                    logger.info(f'Сохранено базу {responsed_pay}')
+                    await message.reply(f'Добавлено в базу. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+                else:
+                    logger.debug(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+                    # await message.reply(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
             else:
-                logger.debug(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
-                # await message.reply(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+                # Действия с дубликатом
+                pass
         else:
             for admin in conf.tg_bot.admin_ids:
                 try:
                     await bot.send_message(admin, 'Не распознан скриншот')
+                    await bot.forward_message(chat_id=admin, from_chat_id=message.chat.id)
                     await message.forward(chat_id=admin)
                 except Exception as err:
                     pass
@@ -132,6 +138,7 @@ async def ocr_photo(message: Message, bot: Bot):
         if errors:
             await send_alarm_to_admin(text, errors, bot)
         print(f'{round(time.perf_counter() - start, 2)} сек.')
+
     except Exception as err:
         err_log.error(f'Неизвестная ошибка при распознавании скриншота\n', exc_info=True)
         await send_alarm_to_admin(message.text, [f'\nНеизвестная ошибка при распознавании скриншота!\n\n{err}'], bot)
