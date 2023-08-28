@@ -5,7 +5,7 @@ from sqlite3 import Timestamp
 from time import time
 
 from sqlalchemy import create_engine, ForeignKey, Date, String, DateTime, \
-    Float, UniqueConstraint, Integer, MetaData, BigInteger
+    Float, UniqueConstraint, Integer, MetaData, BigInteger, Text
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -45,6 +45,15 @@ class Incoming(Base):
 
     def __repr__(self):
         return f'{self.id}. {self.register_date}'
+
+
+class TrashIncoming(Base):
+    __tablename__ = 'deposit_trashincoming'
+    id: Mapped[int] = mapped_column(primary_key=True,
+                                    autoincrement=True,
+                                    comment='Первичный ключ')
+    register_date: Mapped[time] = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.datetime.now(tz=tz))
+    text: Mapped[str] = mapped_column(Text())
 
 
 Base.metadata.create_all(engine)

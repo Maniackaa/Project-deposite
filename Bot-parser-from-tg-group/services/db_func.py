@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from config_data.bot_conf import get_my_loggers
-from database.db import Session, Incoming
+from database.db import Session, Incoming, TrashIncoming
 
 logger, err_log = get_my_loggers()
 
@@ -41,6 +41,35 @@ def add_pay_to_db(pay: dict):
     except Exception as err:
         logger.debug(f'Ошибка при добавлении в базу', exc_info=True)
         raise err
+
+
+def add_to_trash(text: str):
+    logger.debug(f'Добавление в нераспознанное {text}')
+    try:
+        session = Session()
+        with session:
+            trash = TrashIncoming(text=text)
+            session.add(trash)
+            session.commit()
+            return True
+    except Exception as err:
+        logger.debug(f'Ошибка при добавлении в базу', exc_info=True)
+        raise err
+
+
+def read_new_incomings(last_num=0, sms_types: list[str] = []):
+    start = time.perf_counter()
+    logger.debug(f'Читаем базу где id > {last_num}')
+    try:
+        session = Session()
+        with session:
+            incomings = select(Incoming).where(Incoming.id > last_num).filter(Incoming.type.in_(sms_types)).order_by('id')
+            res = session.scalars(incomings).all()
+            logger.debug(f'Результат {res}')
+            return res
+    except Exception as err:
+        logger.debug(f'Ошибка при чтении базы', exc_info=True)
+        # raise err
 
 
 # check_transaction(80011554)

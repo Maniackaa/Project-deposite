@@ -87,6 +87,7 @@ class TgBot:
     admin_ids: list  # Список id администраторов бота
     base_dir = BASE_DIR
     TABLE_1: str
+    TABLE_2: str
     TABLE_SHEET_NUM: int
     TIMEZONE: pytz.timezone
     GROUP_ID: str
@@ -109,6 +110,7 @@ def load_config(path=None) -> Config:
     return Config(tg_bot=TgBot(token=os.getenv('BOT_TOKEN'),
                                admin_ids=list(os.getenv('ADMIN_IDS').split(',')),
                                TABLE_1=os.getenv('TABLE_1'),
+                               TABLE_2=os.getenv('TABLE_2'),
                                TABLE_SHEET_NUM=int(os.getenv('TABLE_SHEET_NUM')),
                                TIMEZONE=pytz.timezone(os.getenv('TIMEZONE')),
                                # TIMEZONE=None,

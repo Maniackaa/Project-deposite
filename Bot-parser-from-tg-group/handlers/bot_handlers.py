@@ -11,7 +11,7 @@ from config_data.bot_conf import LOGGING_CONFIG, BASE_DIR, conf
 
 import logging.config
 
-from services.db_func import add_pay_to_db, check_transaction
+from services.db_func import add_pay_to_db, check_transaction, add_to_trash
 from services.ocr_response_func import img_path_to_str, \
     response_m10
 from services.support_func import send_alarm_to_admin
@@ -72,6 +72,15 @@ async def sms_receiver(message: Message, bot: Bot):
         else:
             await message.reply('Неизвестный шаблон!')
             logger.info(f'Добавляем в нераспознанное:\n {message.text}')
+            add_to_trash(message.text)
+
+            for admin in conf.tg_bot.admin_ids:
+                try:
+                    await bot.send_message(admin, 'Не распознано сообщение')
+                    await message.forward(chat_id=admin)
+                except Exception as err:
+                    print(err)
+                    pass
 
         if errors:
             await send_alarm_to_admin(text, errors, bot)
@@ -117,22 +126,36 @@ async def ocr_photo(message: Message, bot: Bot):
                 responsed_pay: dict = response_func[text_sms_type](fields, search_result[0])
                 errors = responsed_pay.pop('errors')
                 break
-        if text_sms_type:
+        if responsed_pay.get('sender') == '':
+            text_sms_type = 'trash'
+
+        if text_sms_type == 'trash':
+            # Добавляем в мусор
+            logger.debug('Пустой отправитель. В мусор')
+            trash_text = ' | '.join([f'{key}: {val}' for (key, val) in responsed_pay.items()])
+            add_to_trash(trash_text)
+            await message.reply('Пустой отправитель. В мусор')
+
+        elif text_sms_type:
             # Шаблон распознан
             logger.debug(f'Сохраняем в базу {responsed_pay}')
             is_used_transaction = check_transaction(responsed_pay['transaction'])
 
             if not is_used_transaction:
                 # пробуем добавлять в базу
-                if add_pay_to_db(responsed_pay):
+                is_add_to_db = add_pay_to_db(responsed_pay)
+                if is_add_to_db:
                     logger.info(f'Сохранено базу {responsed_pay}')
                     await message.reply(f'Добавлено в базу. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
                 else:
-                    logger.debug(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
-                    # await message.reply(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+                    logger.debug(f'Не добавлено в базу!')
             else:
                 # Действия с дубликатом
                 logger.debug('Дубликат')
+                try:
+                    await message.delete()
+                except:
+                    pass
         else:
             # Шаблон не распознан
             logger.debug('Шаблон не распознан')
