@@ -6,5 +6,5 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
 COPY rus.traineddata /usr/share/tesseract-ocr/5/tessdata/
-COPY rus.traineddata /usr/share/tesseract-ocr/4/tessdata/
+COPY rus.traineddata /usr/share/tesseract-ocr/4.00/tessdata/
 CMD ["python3", "main.py"]
