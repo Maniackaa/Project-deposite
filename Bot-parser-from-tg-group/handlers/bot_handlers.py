@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 
 from aiogram import Router, F, Bot
+from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 
 from config_data.bot_conf import LOGGING_CONFIG, BASE_DIR, conf
@@ -22,6 +23,11 @@ logger = logging.getLogger('bot_logger')
 err_log = logging.getLogger('errors_logger')
 
 router: Router = Router()
+
+
+@router.message(Command('start'))
+async def sms_receiver(message: Message, bot: Bot):
+    await message.answer('Бот запущен')
 
 
 @router.message(F.text)
@@ -108,15 +114,16 @@ async def ocr_photo(message: Message, bot: Bot):
             if search_result:
                 logger.debug(f'Найдено: {sms_type}: {search_result}')
                 text_sms_type = sms_type
-                responsed_pay: dict = response_func[text_sms_type](fields,
-                                                                   search_result[
-                                                                       0])
+                responsed_pay: dict = response_func[text_sms_type](fields, search_result[0])
                 errors = responsed_pay.pop('errors')
                 break
         if text_sms_type:
+            # Шаблон распознан
             logger.debug(f'Сохраняем в базу {responsed_pay}')
-            if check_transaction(responsed_pay['transaction']):
-                # робуем добавлять в базу
+            is_used_transaction = check_transaction(responsed_pay['transaction'])
+
+            if not is_used_transaction:
+                # пробуем добавлять в базу
                 if add_pay_to_db(responsed_pay):
                     logger.info(f'Сохранено базу {responsed_pay}')
                     await message.reply(f'Добавлено в базу. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
@@ -125,14 +132,16 @@ async def ocr_photo(message: Message, bot: Bot):
                     # await message.reply(f'Дубликат. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
             else:
                 # Действия с дубликатом
-                pass
+                logger.debug('Дубликат')
         else:
+            # Шаблон не распознан
+            logger.debug('Шаблон не распознан')
             for admin in conf.tg_bot.admin_ids:
                 try:
                     await bot.send_message(admin, 'Не распознан скриншот')
-                    await bot.forward_message(chat_id=admin, from_chat_id=message.chat.id)
                     await message.forward(chat_id=admin)
                 except Exception as err:
+                    print(err)
                     pass
 
         if errors:

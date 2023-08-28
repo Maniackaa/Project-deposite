@@ -1,9 +1,6 @@
-FROM python:3.10
+FROM python:3.10.11
 WORKDIR /app
-#RUN apk update && \
-#    apk add libpq-dev python-dev
-RUN apt-get update
-RUN apt-get install libpq-dev libgl1 tesseract-ocr -y
+RUN apt-get update && apt-get install libpq-dev libgl1 tesseract-ocr -y
 COPY requirements.txt .
 RUN pip install -r requirements.txt --no-cache-dir
 COPY . .
