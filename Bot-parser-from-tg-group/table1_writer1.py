@@ -5,9 +5,9 @@ import aioschedule
 
 
 from config_data.bot_conf import get_my_loggers, conf
-from database.db import Incoming
+from database.db import Incoming, TrashIncoming
 from database.redis_db import r
-from services.db_func import read_new_incomings, get_day_report_rows
+from services.db_func import read_new_incomings, get_day_report_rows, read_new_trashincomings
 from services.google_func import write_to_table
 
 logger, err_log, logger1, logger2 = get_my_loggers()
@@ -40,7 +40,6 @@ async def main():
                 table1_last_num = int(table1_last_num.decode())
             logger1.debug(f'table1_last_num: {table1_last_num}')
 
-            # sms_types = ['sms1', 'sms2', 'sms3', 'm10', 'm10_short']
             new_incomings: list[Incoming] = read_new_incomings(table1_last_num)
             rows = []
             for incoming in new_incomings:
@@ -61,18 +60,38 @@ async def main():
                 await write_to_table(rows, start_row=table1_last_num + 2)
                 r.set('table1_last_num', pk)
                 logger1.debug(f'Записи добавлены за {time.perf_counter() - start}')
+
+            # Проверим мусор
+            table1_trash_last_num = r.get('table1_trash_last_num')
+            if not table1_trash_last_num:
+                table1_trash_last_num = 0
             else:
-                pass
+                table1_trash_last_num = int(table1_trash_last_num.decode())
+            logger1.debug(f'table1_trash_last_num: {table1_trash_last_num}')
+            trashs: list[TrashIncoming] = read_new_trashincomings(table1_trash_last_num)
+            trash_rows = []
+            for trash in trashs:
+                trash_pk = trash.id
+                row = [
+                    trash.register_date.strftime('%Y.%m.%d %H:%M'), trash.text
+                ]
+                trash_rows.append(row)
+            if trash_rows:
+                await write_to_table(trash_rows, start_row=table1_trash_last_num + 2, sheets_num=3)
+                r.set('table1_trash_last_num', trash_pk)
+                logger1.debug(f'Записи добавлены за {time.perf_counter() - start}')
+
             await asyncio.sleep(1)
 
         except Exception as err:
             await asyncio.sleep(1)
-            pass
+            print(err)
 
 
 if __name__ == '__main__':
     logger1.info('Starting Table writer 1')
     try:
+        # r.set('table1_trash_last_num', 0)
         asyncio.run(write_sheets2())
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):

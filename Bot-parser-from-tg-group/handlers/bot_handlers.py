@@ -108,15 +108,15 @@ async def ocr_photo(message: Message, bot: Bot):
         text = img_path_to_str(img_path)
         print('text', text)
         patterns = {
-            'm10': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).*Получатель (.*) Отправитель (.*) Код транзакции (\d+) Сумма (.+) Статус',
-            'm10_short': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).* (Пополнение.*) Получатель (.*) Код транзакции (\d+) Сумма (.+) Статус',
+            'm10': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).*Получатель (.*) Отправитель (.*) Код транзакции (\d+) Сумма (.+) Статус (.*) .*8',
+            'm10_short': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).* (Пополнение.*) Получатель (.*) Код транзакции (\d+) Сумма (.+) Статус (.*) 8.*',
         }
         response_func = {
             'm10': response_m10,
             'm10_short': response_m10_short,
         }
         fields = ['response_date', 'sender', 'bank', 'pay', 'balance',
-                  'transaction', 'type']
+                  'transaction', 'type', 'status']
         text_sms_type = ''
         responsed_pay = {}
         errors = []
@@ -127,8 +127,10 @@ async def ocr_photo(message: Message, bot: Bot):
                 text_sms_type = sms_type
                 responsed_pay: dict = response_func[text_sms_type](fields, search_result[0])
                 errors = responsed_pay.pop('errors')
+                status = responsed_pay.pop('status')
                 break
-        if responsed_pay.get('sender') == '':
+
+        if responsed_pay.get('sender') == '' or status.lower() != 'успешно':
             text_sms_type = 'trash'
 
         if text_sms_type == 'trash':
@@ -136,7 +138,7 @@ async def ocr_photo(message: Message, bot: Bot):
             logger.debug('Пустой отправитель. В мусор')
             trash_text = ' | '.join([f'{key}: {val}' for (key, val) in responsed_pay.items()])
             add_to_trash(trash_text)
-            await message.reply('Пустой отправитель. В мусор')
+            await message.reply('Кривой чек. В мусор')
 
         elif text_sms_type:
             # Шаблон распознан

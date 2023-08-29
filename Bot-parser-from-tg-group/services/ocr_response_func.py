@@ -40,8 +40,8 @@ def date_m10_response(data_text: str) -> datetime.datetime:
 def response_m10(fields, groups) -> dict[str, str | float]:
     """
     Функия распознавания шаблона m10
-    :param fields: ['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type']
-    :param groups: ('25.08.2023 01:07', '+994 51 927 05 68', '+994 70 *** ** 27', '55555150', '5.00 м')
+    :param fields: ['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type', 'status']
+    :param groups: ('25.08.2023 01:07', '+994 51 927 05 68', '+994 70 *** ** 27', '55555150', '5.00 м', 'Успешно ')
     :return: dict[str, str | float]
     """
     logger.debug('Преобразование текста m10')
@@ -50,10 +50,12 @@ def response_m10(fields, groups) -> dict[str, str | float]:
         'sender':           {'pos': 2},
         'pay':              {'pos': 4, 'func': lambda x: float(''.join([c if c in ['.', '-'] or c.isdigit() else '' for c in x]))},
         'transaction':      {'pos': 3, 'func': int},
+        'status':           {'pos': 5},
     }
     sms_type = 'm10'
     try:
         result = response_operations(fields, groups, response_fields, sms_type)
+        logger.debug(result)
         return result
     except Exception as err:
         err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
@@ -62,8 +64,8 @@ def response_m10(fields, groups) -> dict[str, str | float]:
 def response_m10_short(fields, groups) -> dict[str, str | float]:
     """
     Функия распознавания шаблона m10
-    :param fields: ['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type']
-    :param groups: ('27.08.2023 01:48', 'Пополнение С МИОМ', '+994 51 927 05 68', '56191119', '10-00 ®')
+    :param fields: ['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type', 'status']
+    :param groups: ('25.08.2023 23:28', '+994 51 927 05 68', '', '55874117', '500.00 №', 'Ошибка ')
     :return: dict[str, str | float]
     """
     logger.debug(f'Преобразование текста m10_short {groups}')
@@ -72,6 +74,7 @@ def response_m10_short(fields, groups) -> dict[str, str | float]:
         'sender':           {'pos': 1},
         'pay':              {'pos': 4, 'func': lambda x: float(''.join([c if c in ['.', '-'] or c.isdigit() else '' for c in x]))},
         'transaction':      {'pos': 3, 'func': int},
+        'status':           {'pos': 5},
     }
     sms_type = 'm10_short'
     try:

@@ -70,7 +70,20 @@ def read_new_incomings(last_num=0, sms_types: list[str] = []):
         logger.debug(f'Ошибка при чтении базы', exc_info=True)
 
 
+def read_new_trashincomings(last_num=0):
+    try:
+        session = Session()
+        with session:
+            incomings = select(TrashIncoming).where(TrashIncoming.id > last_num).order_by('id')
+            res = session.scalars(incomings).all()
+            logger.debug(f'Результат {res}')
+            return res
+    except Exception as err:
+        logger.debug(f'Ошибка при чтении базы', exc_info=True)
+
+
 def find_new_out(last_num=0):
+    # Находит новые выводы
     try:
         session = Session()
         with session:
