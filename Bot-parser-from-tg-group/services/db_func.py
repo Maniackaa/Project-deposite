@@ -123,15 +123,15 @@ def get_day_report_rows():
                 row = [date.strftime('%d.%m.%Y'), '0/0', '0/0', '0/0']
                 for step1_day in results1:
                     if step1_day[0] == date:
-                        step1_text = f'{step1_day[1]}/{step1_day[2]}'
+                        step1_text = f'{round(step1_day[1], 2)}/{step1_day[2]}'
                         row[1] = step1_text
                 for step2_day in results2:
                     if step2_day[0] == date:
-                        step2_text = f'{step2_day[1]}/{step2_day[2]}'
+                        step2_text = f'{round(step2_day[1], 2)}/{step2_day[2]}'
                         row[2] = step2_text
                 for step3_day in results3:
                     if step3_day[0] == date:
-                        step3_text = f'{step3_day[1]}/{step3_day[2]}'
+                        step3_text = f'{round(step3_day[1], 2)}/{step3_day[2]}'
                         row[3] = step3_text
                 rows.append(row)
             logger1.debug(f'Сменные отчеты: {rows}')
