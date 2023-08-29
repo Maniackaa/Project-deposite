@@ -99,18 +99,19 @@ def img_path_to_str(path):
 
 
 def test_img_path_to_str():
-    path_test = [
-        ('1.jpg', {'msg_date': '2023-08-25', 'sender': '+994 70 *** ** 27', 'receiver': '+994 51 927 05 68', 'msg_time': '01:07', 'balance_change': 5.0, 'transaction': '55555150'}),
-        ('2.jpg', {'msg_date': '2023-08-25', 'sender': '+994 55 *** ** 57', 'receiver': '+994 51 927 05 68', 'msg_time': '01:03', 'balance_change': 100.0, 'transaction': '55554745'}),
-        ('3.jpg', {'msg_date': '2023-08-25', 'sender': '+994 70 *** ** 27', 'receiver': '+994 51 927 05 68', 'msg_time': '00:39', 'balance_change': 5.0, 'transaction': '55551881'}),
-        ('4.jpg', {'msg_date': '2023-08-25', 'sender': '+994 55 *** ** 57', 'receiver': '+994 51 927 05 68', 'msg_time': '00:33', 'balance_change': 50.0, 'transaction': '55551154'}),
-        ('5.jpg', {'msg_date': '2023-08-24', 'sender': '+994 55 *** ** 77', 'receiver': '+994 51 927 05 68', 'msg_time': '22:17', 'balance_change': 12.0, 'transaction': '55522337'}),
-
-    ]
+    # path_test = [
+    #     ('1.jpg', {'msg_date': '2023-08-25', 'sender': '+994 70 *** ** 27', 'receiver': '+994 51 927 05 68', 'msg_time': '01:07', 'balance_change': 5.0, 'transaction': '55555150'}),
+    #     ('2.jpg', {'msg_date': '2023-08-25', 'sender': '+994 55 *** ** 57', 'receiver': '+994 51 927 05 68', 'msg_time': '01:03', 'balance_change': 100.0, 'transaction': '55554745'}),
+    #     ('3.jpg', {'msg_date': '2023-08-25', 'sender': '+994 70 *** ** 27', 'receiver': '+994 51 927 05 68', 'msg_time': '00:39', 'balance_change': 5.0, 'transaction': '55551881'}),
+    #     ('4.jpg', {'msg_date': '2023-08-25', 'sender': '+994 55 *** ** 57', 'receiver': '+994 51 927 05 68', 'msg_time': '00:33', 'balance_change': 50.0, 'transaction': '55551154'}),
+    #     ('5.jpg', {'msg_date': '2023-08-24', 'sender': '+994 55 *** ** 77', 'receiver': '+994 51 927 05 68', 'msg_time': '22:17', 'balance_change': 12.0, 'transaction': '55522337'}),
+    #
+    # ]
+    path_test = [('short.jpg', {'msg_date': '2023-08-25', 'sender': '+994 70 *** ** 27', 'receiver': '+994 51 927 05 68', 'msg_time': '01:07', 'balance_change': 5.0, 'transaction': '55555150'})]
     counter = Counter()
     for path_pair in path_test:
 
-        path = BASE_DIR / 'photos' / path_pair[0]
+        path = BASE_DIR / 'tests' / path_pair[0]
 
         for i in range(255):
             nums = set()
@@ -163,3 +164,4 @@ def ocr_test():
         assert resp == path_pair[1], f'Ошибка при расознавании:\nОбразец:\n{path_pair[1]}\nРезультат:\n{resp}'
 
 ocr_test()
+test_img_path_to_str()

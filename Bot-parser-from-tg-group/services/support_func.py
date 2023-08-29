@@ -11,7 +11,7 @@ def get_my_loggers():
     return logging.getLogger('bot_logger'), logging.getLogger('errors_logger')
 
 
-logger, err_log = get_my_loggers()
+logger, err_log, *other_log = get_my_loggers()
 
 
 async def send_alarm_to_admin(text: str, errors: list, bot: Bot):
@@ -27,7 +27,7 @@ async def send_alarm_to_admin(text: str, errors: list, bot: Bot):
     error_text += '\n\n'.join(errors)
     for admin in admin_ids:
         try:
-            await bot.send_message(chat_id=admin, text=error_text)
-        except Exception:
+            print(error_text)
+            await bot.send_message(chat_id=int(admin), text=error_text)
+        except Exception as err:
             err_log.error(f'Ошибка отправки сообщения {admin}')
-

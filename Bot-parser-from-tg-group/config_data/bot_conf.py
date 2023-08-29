@@ -37,6 +37,24 @@ LOGGING_CONFIG = {
             'encoding': 'UTF-8',
             'formatter': 'default_formatter',
         },
+        'table1_file_handler': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': f'{BASE_DIR / "logs" / "table1"}.log',
+            'backupCount': 2,
+            'maxBytes': 10 * 1024 * 1024,
+            'mode': 'a',
+            'encoding': 'UTF-8',
+            'formatter': 'default_formatter',
+        },
+        'table2_file_handler': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': f'{BASE_DIR / "logs" / "table2"}.log',
+            'backupCount': 2,
+            'maxBytes': 10 * 1024 * 1024,
+            'mode': 'a',
+            'encoding': 'UTF-8',
+            'formatter': 'default_formatter',
+        },
         'errors_file_handler': {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': f'{BASE_DIR / "logs" / "errors_bot"}.log',
@@ -55,6 +73,16 @@ LOGGING_CONFIG = {
         },
         'errors_logger': {
             'handlers': ['stream_handler', 'errors_file_handler'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+        'table1_logger': {
+            'handlers': ['stream_handler', 'rotating_file_handler'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+        'table2_logger': {
+            'handlers': ['stream_handler', 'rotating_file_handler'],
             'level': 'DEBUG',
             'propagate': True
         },
@@ -142,4 +170,4 @@ print(conf)
 def get_my_loggers():
     import logging.config
     logging.config.dictConfig(LOGGING_CONFIG)
-    return logging.getLogger('bot_logger'), logging.getLogger('errors_logger')
+    return logging.getLogger('bot_logger'), logging.getLogger('errors_logger'), logging.getLogger('table1_logger'), logging.getLogger('table2_logger'),

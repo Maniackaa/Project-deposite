@@ -13,7 +13,7 @@ import logging.config
 
 from services.db_func import add_pay_to_db, check_transaction, add_to_trash
 from services.ocr_response_func import img_path_to_str, \
-    response_m10
+    response_m10, response_m10_short
 from services.support_func import send_alarm_to_admin
 from services.text_response_func import response_sms1, response_sms2, \
     response_sms3
@@ -106,12 +106,14 @@ async def ocr_photo(message: Message, bot: Bot):
             img_path = BASE_DIR / 'photos' / f'{img_id}.jpg'
             await bot.download(message.document, destination=img_path)
         text = img_path_to_str(img_path)
-        print(text)
+        print('text', text)
         patterns = {
             'm10': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).*Получатель (.*) Отправитель (.*) Код транзакции (\d+) Сумма (.+) Статус',
+            'm10_short': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).* (Пополнение.*) Получатель (.*) Код транзакции (\d+) Сумма (.+) Статус',
         }
         response_func = {
             'm10': response_m10,
+            'm10_short': response_m10_short,
         }
         fields = ['response_date', 'sender', 'bank', 'pay', 'balance',
                   'transaction', 'type']
@@ -161,10 +163,11 @@ async def ocr_photo(message: Message, bot: Bot):
             logger.debug('Шаблон не распознан')
             for admin in conf.tg_bot.admin_ids:
                 try:
-                    await bot.send_message(admin, 'Не распознан скриншот')
+                    await bot.send_message(chat_id=int(admin), text='Не распознан скриншот')
                     await message.forward(chat_id=admin)
                 except Exception as err:
                     print(err)
+                    raise err
                     pass
 
         if errors:
@@ -174,7 +177,7 @@ async def ocr_photo(message: Message, bot: Bot):
     except Exception as err:
         err_log.error(f'Неизвестная ошибка при распознавании скриншота\n', exc_info=True)
         await send_alarm_to_admin(message.text, [f'\nНеизвестная ошибка при распознавании скриншота!\n\n{err}'], bot)
-        raise err
+
     finally:
         Path.unlink(img_path)
 

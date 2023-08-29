@@ -2,18 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b8fd0770-e458-4418-bf2f-8a7046abe626" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/table_writer1.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Table-writer/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Table-writer/config_data/bot_conf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Table-writer/database/db.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Table-writer/database/redis_db.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Table-writer/services/db_func.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Table-writer/table_writer1.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/table2_writer1.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/short.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DockerfileTable1Writer1" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/config_data/bot_conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/config_data/bot_conf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/db.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/handlers/bot_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/bot_handlers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/read_db.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/services/db_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/db_func.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/google_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/google_func.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/ocr_response_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/ocr_response_func.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/support_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/support_func.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/text_response_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/text_response_func.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/table1_writer1.py" beforeDir="false" afterPath="$PROJECT_DIR$/table1_writer1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_ocr.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_ocr.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,14 +32,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "D:/Dev/Freelance/Проект депозиты/Project-deposite/Bot-parser-from-tg-group"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Dev/Freelance/Проект депозиты/Project-deposite/Bot-parser-from-tg-group&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -49,6 +49,7 @@
       <option name="presentableId" value="Default" />
       <updated>1693232336093</updated>
       <workItem from="1693232337367" duration="49000" />
+      <workItem from="1693284089784" duration="5000" />
     </task>
     <servers />
   </component>

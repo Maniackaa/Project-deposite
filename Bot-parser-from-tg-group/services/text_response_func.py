@@ -10,7 +10,7 @@ def get_my_loggers():
     return logging.getLogger('bot_logger'), logging.getLogger('errors_logger')
 
 
-logger, err_log = get_my_loggers()
+logger, err_log, *other_log = get_my_loggers()
 
 
 def get_unrecognized_field_error_text(response_fields, result):

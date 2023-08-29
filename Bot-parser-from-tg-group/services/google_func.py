@@ -9,7 +9,7 @@ from gspread.utils import rowcol_to_a1
 from config_data.bot_conf import BASE_DIR, conf, get_my_loggers
 from google.oauth2.service_account import Credentials
 
-logger, err_log = get_my_loggers()
+logger, err_log, *other_log = get_my_loggers()
 
 
 def get_creds():
@@ -25,14 +25,13 @@ def get_creds():
     return scoped
 
 
-async def write_to_table(rows: list[list], start_row=1, sheets_num=0):
+async def write_to_table(rows: list[list], start_row=1, url=conf.tg_bot.TABLE_1, sheets_num=0):
     """Записывает строки в таблицу"""
     if not rows:
         return
     logger.debug(f'Добавляем c {start_row}: {rows}')
     agcm = gspread_asyncio.AsyncioGspreadClientManager(get_creds)
     agc = await agcm.authorize()
-    url = conf.tg_bot.TABLE_1
     sheet = await agc.open_by_url(url)
     table = await sheet.get_worksheet(sheets_num)
     # await table.append_rows(rows)
