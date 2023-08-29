@@ -84,7 +84,7 @@ def find_new_out(last_num=0):
 
 
 def get_day_report_rows():
-    logger.debug(f'Читаем сменные отчеты')
+    logger.debug(f'Считаем сменные отчеты')
     try:
         session = Session()
         with session:
@@ -92,7 +92,7 @@ def get_day_report_rows():
                                func.sum(Incoming.pay),
                                func.count(Incoming.pay)).where(
                 and_(func.cast(Incoming.register_date, Time) >= '00:00', func.cast(Incoming.register_date, Time) < '08:00')
-            ).group_by(
+            ).where(Incoming.pay > 0).group_by(
                 func.cast(Incoming.register_date, Date)
             )
             results1 = session.execute(step1).all()
@@ -101,7 +101,7 @@ def get_day_report_rows():
                                func.sum(Incoming.pay),
                                func.count(Incoming.pay)).where(
                 and_(func.cast(Incoming.register_date, Time) >= '08:00', func.cast(Incoming.register_date, Time) < '16:00')
-            ).group_by(
+            ).where(Incoming.pay > 0).group_by(
                 func.cast(Incoming.register_date, Date)
             )
             results2 = session.execute(step2).all()
@@ -111,7 +111,7 @@ def get_day_report_rows():
                            func.count(Incoming.pay)).where(
                 and_(func.cast(Incoming.register_date, Time) >= '16:00',
                      func.cast(Incoming.register_date, Time) <= '23:59:59.999999')
-            ).group_by(
+            ).where(Incoming.pay > 0).group_by(
                 func.cast(Incoming.register_date, Date)
             )
             results3 = session.execute(step3).all()
@@ -120,7 +120,7 @@ def get_day_report_rows():
                                func.sum(Incoming.pay),
                                func.count(Incoming.pay)).group_by(
                 func.cast(Incoming.register_date, Date)
-            )
+            ).where(Incoming.pay > 0)
             results_all = session.execute(all_steps).all()
 
             dates = select(func.cast(Incoming.register_date, Date)).order_by(func.cast(Incoming.register_date, Date)).distinct()
@@ -129,18 +129,21 @@ def get_day_report_rows():
             for date in dates_result:
                 row = [date.strftime('%d.%m.%Y'), '0 - 0', '0 - 0', '0 - 0', '0 - 0']
                 for all_day in results_all:
+                    # (datetime.date(2023, 8, 27), 20.0, 3)
                     if all_day[0] == date:
-                        step1_text = f'{round(all_day[1], 2)} - {all_day[2]}'
-                        row[1] = step1_text
+                        all_day_text = f'{round(all_day[1], 2)} - {all_day[2]}'
+                        row[1] = all_day_text
 
                 for step1_day in results1:
                     if step1_day[0] == date:
                         step1_text = f'{round(step1_day[1], 2)} - {step1_day[2]}'
                         row[2] = step1_text
+
                 for step2_day in results2:
                     if step2_day[0] == date:
                         step2_text = f'{round(step2_day[1], 2)} - {step2_day[2]}'
                         row[3] = step2_text
+
                 for step3_day in results3:
                     if step3_day[0] == date:
                         step3_text = f'{round(step3_day[1], 2)} - {step3_day[2]}'

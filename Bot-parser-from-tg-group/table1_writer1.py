@@ -73,6 +73,7 @@ async def main():
 if __name__ == '__main__':
     logger1.info('Starting Table writer 1')
     try:
+        asyncio.run(write_sheets2())
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger1.info('Table writer 1 stopped!')
