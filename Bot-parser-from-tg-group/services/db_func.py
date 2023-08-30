@@ -87,7 +87,10 @@ def find_new_out(last_num=0):
     try:
         session = Session()
         with session:
-            incomings = select(Incoming).where(Incoming.id > last_num).filter(Incoming.sender.regexp_match(r'\d\d\d \d\d \d\d\d \d\d \d\d')).order_by('id')
+            incomings = select(Incoming).where(Incoming.id > last_num).filter(
+                Incoming.sender.regexp_match(r'\d\d\d \d\d \d\d\d \d\d \d\d')).where(
+                Incoming.pay > 0
+            ).order_by('id')
             results = session.scalars(incomings).all()
             logger2.debug(f'Результат {results}')
             return results
@@ -96,72 +99,111 @@ def find_new_out(last_num=0):
         logger2.debug(f'Ошибка при чтении базы', exc_info=True)
 
 
+
+#
+# def get_step_results():
+#     try:
+#         session = Session()
+#
+#         def period_report(start='00:00', end='23:59:00.999999'):
+#             """
+#             Находит сумму и количество pay за период времени
+#             :param start: '00:00'
+#             :param end: '23:59:59.999999'
+#             :return: [(datetime.date(2023, 8, 26), 500.0, 1)]
+#             """
+#             step = select(func.cast(Incoming.register_date, Date),
+#                           func.sum(Incoming.pay),
+#                           func.count(Incoming.pay)).where(
+#                 and_(func.cast(Incoming.register_date, Time) >= start, func.cast(Incoming.register_date, Time) <= end)
+#             ).where(Incoming.pay > 0).group_by(
+#                 func.cast(Incoming.register_date, Date)
+#             )
+#             return step
+#
+#         with session:
+#             step1 = period_report('00:00', '07:59:00.999999')
+#             results1 = session.execute(step1).all()
+#
+#             step2 = period_report('08:00', '15:59:00.999999')
+#             results2 = session.execute(step2).all()
+#
+#             step3 = period_report('16:00', '23:59:00.999999')
+#             results3 = session.execute(step3).all()
+#
+#             all_steps = period_report()
+#             results_all = session.execute(all_steps).all()
+#
+#             dates = select(func.cast(Incoming.register_date, Date)).order_by(
+#                 func.cast(Incoming.register_date, Date)).distinct()
+#             dates_result = session.execute(dates).scalars().all()
+#
+#             rows = []
+#             for date in dates_result:
+#                 print(date)
+#                 row = [date.strftime('%d.%m.%Y'), '0 - 0', '0 - 0', '0 - 0', '0 - 0']
+#                 for num, step in enumerate([results_all, results1, results2, results3], 1):
+#                     print('---', step)
+#                     for step_day in step:
+#                         if step_day[0] == date:
+#                             day_text = f'{round(step_day[1], 2)} - {step_day[2]}'
+#                         row[num] = day_text
+#                 rows.append(row)
+#
+#             logger1.debug(f'Сменные отчеты: {rows}')
+#     except Exception as err:
+#         err_log.error('ошибка посдсчета смен', exc_info=True)
+
 def get_day_report_rows():
     logger.debug(f'Считаем сменные отчеты')
+
+    def period_report(start='00:00', end='23:59:00.999999'):
+        """
+        Находит сумму и количество pay за период времени
+        :param start: '00:00'
+        :param end: '23:59:59.999999'
+        :return: [(datetime.date(2023, 8, 26), 500.0, 1)]
+        """
+        step = select(func.cast(Incoming.register_date, Date),
+                      func.sum(Incoming.pay),
+                      func.count(Incoming.pay)).where(
+            and_(func.cast(Incoming.register_date, Time) >= start, func.cast(Incoming.register_date, Time) <= end)
+        ).where(Incoming.pay > 0).group_by(
+            func.cast(Incoming.register_date, Date)
+        )
+        return step
+
     try:
         session = Session()
+
         with session:
-            step1 = select(func.cast(Incoming.register_date, Date),
-                               func.sum(Incoming.pay),
-                               func.count(Incoming.pay)).where(
-                and_(func.cast(Incoming.register_date, Time) >= '00:00', func.cast(Incoming.register_date, Time) < '08:00')
-            ).where(Incoming.pay > 0).group_by(
-                func.cast(Incoming.register_date, Date)
-            )
+            step1 = period_report('00:00', '07:59:00.999999')
             results1 = session.execute(step1).all()
 
-            step2 = select(func.cast(Incoming.register_date, Date),
-                               func.sum(Incoming.pay),
-                               func.count(Incoming.pay)).where(
-                and_(func.cast(Incoming.register_date, Time) >= '08:00', func.cast(Incoming.register_date, Time) < '16:00')
-            ).where(Incoming.pay > 0).group_by(
-                func.cast(Incoming.register_date, Date)
-            )
+            step2 = period_report('08:00', '15:59:00.999999')
             results2 = session.execute(step2).all()
 
-            step3 = select(func.cast(Incoming.register_date, Date),
-                           func.sum(Incoming.pay),
-                           func.count(Incoming.pay)).where(
-                and_(func.cast(Incoming.register_date, Time) >= '16:00',
-                     func.cast(Incoming.register_date, Time) <= '23:59:59.999999')
-            ).where(Incoming.pay > 0).group_by(
-                func.cast(Incoming.register_date, Date)
-            )
+            step3 = period_report('16:00', '23:59:00.999999')
             results3 = session.execute(step3).all()
 
-            all_steps = select(func.cast(Incoming.register_date, Date),
-                               func.sum(Incoming.pay),
-                               func.count(Incoming.pay)).group_by(
-                func.cast(Incoming.register_date, Date)
-            ).where(Incoming.pay > 0)
+            all_steps = period_report()
             results_all = session.execute(all_steps).all()
 
             dates = select(func.cast(Incoming.register_date, Date)).order_by(func.cast(Incoming.register_date, Date)).distinct()
             dates_result = session.execute(dates).scalars().all()
+
             rows = []
             for date in dates_result:
+                print(date)
                 row = [date.strftime('%d.%m.%Y'), '0 - 0', '0 - 0', '0 - 0', '0 - 0']
-                for all_day in results_all:
-                    # (datetime.date(2023, 8, 27), 20.0, 3)
-                    if all_day[0] == date:
-                        all_day_text = f'{round(all_day[1], 2)} - {all_day[2]}'
-                        row[1] = all_day_text
-
-                for step1_day in results1:
-                    if step1_day[0] == date:
-                        step1_text = f'{round(step1_day[1], 2)} - {step1_day[2]}'
-                        row[2] = step1_text
-
-                for step2_day in results2:
-                    if step2_day[0] == date:
-                        step2_text = f'{round(step2_day[1], 2)} - {step2_day[2]}'
-                        row[3] = step2_text
-
-                for step3_day in results3:
-                    if step3_day[0] == date:
-                        step3_text = f'{round(step3_day[1], 2)} - {step3_day[2]}'
-                        row[4] = step3_text
+                for num, step in enumerate([results_all, results1, results2, results3], 1):
+                    print('---', step)
+                    for step_day in step:
+                        if step_day[0] == date:
+                            day_text = f'{round(step_day[1], 2)} - {step_day[2]}'
+                            row[num] = day_text
                 rows.append(row)
+
             logger1.debug(f'Сменные отчеты: {rows}')
             return rows
 
@@ -169,8 +211,67 @@ def get_day_report_rows():
         err_log.debug(f'Ошибка при чтении отчетов', exc_info=True)
 
 
+
+def get_out_report_rows():
+    logger.debug(f'Считаем сменные отчеты выводов')
+    try:
+        session = Session()
+
+        def out_period_report(start='00:00', end='23:59:00.999999'):
+            """
+            Находит сумму и количество pay выводов за период времени
+            :param start: '00:00'
+            :param end: '23:59:59.999999'
+            :return: [(datetime.date(2023, 8, 26), 500.0, 1)]
+            """
+            step = select(func.cast(Incoming.register_date, Date),
+                          func.sum(Incoming.pay),
+                          func.count(Incoming.pay)).filter(
+                Incoming.sender.regexp_match(r'\d\d\d \d\d \d\d\d \d\d \d\d')).where(
+                and_(
+                    func.cast(Incoming.register_date, Time) >= start,
+                    func.cast(Incoming.register_date, Time) <= end)).where(
+                Incoming.pay > 0).group_by(func.cast(Incoming.register_date, Date))
+            return step
+
+        with session:
+            step1 = out_period_report('00:00', '07:59:00.999999')
+            results1 = session.execute(step1).all()
+
+            step2 = out_period_report('08:00', '15:59:00.999999')
+            results2 = session.execute(step2).all()
+
+            step3 = out_period_report('16:00', '23:59:00.999999')
+            results3 = session.execute(step3).all()
+
+            all_steps = out_period_report()
+            results_all = session.execute(all_steps).all()
+
+            dates = select(func.cast(Incoming.register_date, Date)).order_by(func.cast(Incoming.register_date, Date)).distinct()
+            dates_result = session.execute(dates).scalars().all()
+
+            rows = []
+            for date in dates_result:
+                print(date)
+                row = [date.strftime('%d.%m.%Y'), '0 - 0', '0 - 0', '0 - 0', '0 - 0']
+                for num, step in enumerate([results_all, results1, results2, results3], 1):
+                    print('---', step)
+                    for step_day in step:
+                        if step_day[0] == date:
+                            day_text = f'{round(step_day[1], 2)} - {step_day[2]}'
+                            row[num] = day_text
+                rows.append(row)
+
+            logger1.debug(f'Сменные отчеты выводов: {rows}')
+            return rows
+
+    except Exception as err:
+        err_log.debug(f'Ошибка при чтении отчетов выводов', exc_info=True)
+
+
 # check_transaction(80011554)
 
 if __name__ == '__main__':
     pay = {'response_date': datetime.datetime(2023, 8, 25, 1, 7), 'sender': '+994 70 *** ** 27', 'bank': None, 'pay': 5.0, 'balance': None, 'transaction': 55555150, 'type': 'm10'}
     print(get_day_report_rows())
+    print(get_out_report_rows())
