@@ -27,7 +27,7 @@ async def jobs():
 
 async def main():
     asyncio.create_task(jobs())
-
+    r.set('table2_last_num', 0)
     while True:
         try:
             table2_last_num = r.get('table2_last_num')

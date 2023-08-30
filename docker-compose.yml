@@ -76,3 +76,16 @@ services:
     depends_on:
       - redis
       - db_postgres
+    volumes:
+      - ./logs/Bot-parser:/app/logs
+
+  table2-writer1:
+    restart: always
+    build: Bot-parser-from-tg-group
+    command: python3 ./table2_writer1.py
+    env_file: .env
+    depends_on:
+      - redis
+      - db_postgres
+    volumes:
+      - ./logs/Bot-parser:/app/logs
