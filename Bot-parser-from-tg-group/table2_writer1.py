@@ -27,7 +27,6 @@ async def jobs():
 
 async def main():
     asyncio.create_task(jobs())
-    r.set('table2_last_num', 0)
     while True:
         try:
             table2_last_num = r.get('table2_last_num')
@@ -51,13 +50,9 @@ async def main():
                 ]
                 rows.append(row)
             if rows:
-                print('rows')
-                result = await write_to_table(rows, start_row=table2_last_num + 2, url=conf.tg_bot.TABLE_2)
-                print(result)
+                await write_to_table(rows, start_row=table2_last_num + 2, url=conf.tg_bot.TABLE_2)
                 r.set('table2_last_num', pk)
                 logger2.debug(f'Записи добавлены за {time.perf_counter() - start}')
-
-            # Формирование выводов по сменам.
 
             time.sleep(10)
 
@@ -70,7 +65,7 @@ async def main():
 if __name__ == '__main__':
     logger2.info('Starting Table writer 2')
     try:
-        r.set('table2_last_num', 0)
+        # r.set('table2_last_num', 0)
         asyncio.run(write_sheets2())
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
