@@ -97,6 +97,7 @@ def find_new_out(last_num=0):
 
     except Exception as err:
         logger2.debug(f'Ошибка при чтении базы', exc_info=True)
+        raise err
 
 
 
@@ -273,5 +274,6 @@ def get_out_report_rows():
 
 if __name__ == '__main__':
     pay = {'response_date': datetime.datetime(2023, 8, 25, 1, 7), 'sender': '+994 70 *** ** 27', 'bank': None, 'pay': 5.0, 'balance': None, 'transaction': 55555150, 'type': 'm10'}
-    print(get_day_report_rows())
-    print(get_out_report_rows())
+    # print(get_day_report_rows())
+    # print(get_out_report_rows())
+    find_new_out()
