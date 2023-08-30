@@ -52,7 +52,8 @@ async def main():
                 rows.append(row)
             if rows:
                 print('rows')
-                await write_to_table(rows, start_row=table2_last_num + 2, url=conf.tg_bot.TABLE_2)
+                result = await write_to_table(rows, start_row=table2_last_num + 2, url=conf.tg_bot.TABLE_2)
+                print(result)
                 r.set('table2_last_num', pk)
                 logger2.debug(f'Записи добавлены за {time.perf_counter() - start}')
 
@@ -61,6 +62,7 @@ async def main():
             time.sleep(10)
 
         except Exception as err:
+            logger2.error(err, exc_info=True)
             time.sleep(5)
             pass
 
@@ -68,6 +70,7 @@ async def main():
 if __name__ == '__main__':
     logger2.info('Starting Table writer 2')
     try:
+        r.set('table2_last_num', 0)
         asyncio.run(write_sheets2())
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
