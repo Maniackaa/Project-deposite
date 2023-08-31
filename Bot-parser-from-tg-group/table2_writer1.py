@@ -6,7 +6,7 @@ import aioschedule
 from config_data.bot_conf import get_my_loggers, conf
 from database.db import Incoming
 from database.redis_db import r
-from services.db_func import find_new_out, get_out_report_rows
+from services.db_func import find_new_out, get_out_report_rows, read_all_out
 from services.google_func import write_to_table
 
 logger, err_log, logger1, logger2 = get_my_loggers()
@@ -66,7 +66,8 @@ if __name__ == '__main__':
     logger2.info('Starting Table writer 2')
     try:
         # r.set('table2_last_num', 0)
-        asyncio.run(write_sheets2())
-        asyncio.run(main())
+        read_all_out()
+        # asyncio.run(write_sheets2())
+        # asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger2.info('Table writer 2 stopped!')

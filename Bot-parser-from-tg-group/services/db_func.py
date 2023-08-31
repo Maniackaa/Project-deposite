@@ -270,7 +270,21 @@ def get_out_report_rows():
         err_log.debug(f'Ошибка при чтении отчетов выводов', exc_info=True)
 
 
-# check_transaction(80011554)
+def read_all_out():
+    """Тестовое чтение всех выводов (где полный sender)"""
+    try:
+        logger.debug('read_all_out')
+        session = Session()
+        all_out = select(Incoming).filter(
+            Incoming.sender.regexp_match(r'\d\d\d \d\d \d\d\d \d\d \d\d'))
+        res = session.execute(all_out).scalars().all()
+        print('res read_all_out:', res)
+        for row in res:
+            print(row.id, row.sender)
+        return res
+    except Exception as err:
+        print(err)
+
 
 if __name__ == '__main__':
     pay = {'response_date': datetime.datetime(2023, 8, 25, 1, 7), 'sender': '+994 70 *** ** 27', 'bank': None, 'pay': 5.0, 'balance': None, 'transaction': 55555150, 'type': 'm10'}

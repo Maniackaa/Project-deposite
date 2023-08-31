@@ -37,6 +37,7 @@ async def sms_receiver(message: Message, bot: Bot):
     print()
     print(message.text)
     print()
+
     try:
         text = message.text
         patterns = {
@@ -120,6 +121,7 @@ async def ocr_photo(message: Message, bot: Bot):
         text_sms_type = ''
         responsed_pay = {}
         errors = []
+        status = ''
         for sms_type, pattern in patterns.items():
             search_result = re.findall(pattern, text)
             if search_result:

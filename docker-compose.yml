@@ -77,7 +77,7 @@ services:
       - redis
       - db_postgres
     volumes:
-      - ./logs/Bot-parser:/app/logs
+      - ./logs/Table1:/app/logs
 
   table2-writer1:
     restart: always
@@ -88,4 +88,4 @@ services:
       - redis
       - db_postgres
     volumes:
-      - ./logs/Bot-parser:/app/logs
+      - ./logs/Table2:/app/logs
