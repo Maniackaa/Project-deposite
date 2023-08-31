@@ -69,11 +69,11 @@ async def main():
 if __name__ == '__main__':
     logger2.info('Starting Table writer 2')
     try:
-        r.set('table2_last_num', 0)
+        # r.set('table2_last_num', 0)
         read_all_out()
         print('Новые выводы', find_new_out(0))
         get_out_report_rows()
         asyncio.run(write_sheets2())
-        # asyncio.run(main())
+        asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger2.info('Table writer 2 stopped!')
