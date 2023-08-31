@@ -71,6 +71,7 @@ if __name__ == '__main__':
     try:
         r.set('table2_last_num', 0)
         read_all_out()
+        print('Новые выводы', find_new_out(0))
         get_out_report_rows()
         asyncio.run(write_sheets2())
         # asyncio.run(main())
