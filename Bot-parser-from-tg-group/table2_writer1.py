@@ -32,14 +32,17 @@ async def main():
     asyncio.create_task(jobs())
     while True:
         try:
-            table2_last_num = r.get('table2_last_num')
-            if not table2_last_num:
-                table2_last_num = 0
+            table2_last_id = r.get('table2_last_id')
+            table2_last_row = r.get('table2_last_row')
+            if not table2_last_id:
+                table2_last_id = 0
+                table2_last_row = 0
             else:
-                table2_last_num = int(table2_last_num.decode())
-            logger2.debug(f'table2_last_num: {table2_last_num}')
+                table2_last_id = int(table2_last_id.decode())
+                table2_last_row = int(table2_last_row.decode())
+            logger2.debug(f'table2_last_id: {table2_last_id}')
             start = time.perf_counter()
-            new_outs: list[Incoming] = find_new_out(table2_last_num)
+            new_outs: list[Incoming] = find_new_out(table2_last_id)
             rows = []
             for new_out in new_outs:
                 pk = new_out.id
@@ -54,8 +57,9 @@ async def main():
                 rows.append(row)
             if rows:
                 logger.debug(f'Найдены новые выводы: {rows}')
-                await write_to_table(rows, start_row=table2_last_num + 2, url=conf.tg_bot.TABLE_2)
-                r.set('table2_last_num', pk)
+                await write_to_table(rows, start_row=table2_last_row + 2, url=conf.tg_bot.TABLE_2)
+                r.set('table2_last_id', pk)
+                r.set('table2_last_row', table2_last_row + len(rows))
                 logger2.debug(f'Записи добавлены за {time.perf_counter() - start}')
 
             time.sleep(10)
@@ -69,7 +73,7 @@ async def main():
 if __name__ == '__main__':
     logger2.info('Starting Table writer 2')
     try:
-        # r.set('table2_last_num', 0)
+        # r.set('table2_last_id', 0)
         read_all_out()
         print('Новые выводы', find_new_out(0))
         get_out_report_rows()
