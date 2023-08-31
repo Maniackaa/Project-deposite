@@ -13,9 +13,12 @@ logger, err_log, logger1, logger2 = get_my_loggers()
 
 
 async def write_sheets2():
-    logger1.info('Добавляем репорт выводов')
-    rows = get_out_report_rows()
-    await write_to_table(rows, start_row=2, url=conf.tg_bot.TABLE_2, sheets_num=1)
+    try:
+        logger2.info('Добавляем репорт выводов')
+        rows = get_out_report_rows()
+        await write_to_table(rows, start_row=2, url=conf.tg_bot.TABLE_2, sheets_num=1)
+    except Exception as err:
+        logger2.error('Ошибка при записи в таблицу 2', exc_info=True)
 
 
 async def jobs():
