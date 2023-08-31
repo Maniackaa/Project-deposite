@@ -69,7 +69,7 @@ async def main():
 if __name__ == '__main__':
     logger2.info('Starting Table writer 2')
     try:
-        # r.set('table2_last_num', 0)
+        r.set('table2_last_num', 0)
         read_all_out()
         get_out_report_rows()
         asyncio.run(write_sheets2())
