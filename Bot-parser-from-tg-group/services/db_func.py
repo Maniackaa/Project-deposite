@@ -227,7 +227,7 @@ def get_out_report_rows():
             """
             step = select(func.cast(Incoming.register_date, Date),
                           func.sum(Incoming.pay),
-                          func.count(Incoming.pay)).filter(
+                          func.count(Incoming.pay)).where(
                 Incoming.sender.regexp_match(r'\d\d\d \d\d \d\d\d \d\d \d\d')).where(
                 and_(
                     func.cast(Incoming.register_date, Time) >= start,
@@ -253,10 +253,10 @@ def get_out_report_rows():
 
             rows = []
             for date in dates_result:
-                print(date)
+                # print(date)
                 row = [date.strftime('%d.%m.%Y'), '0 - 0', '0 - 0', '0 - 0', '0 - 0']
                 for num, step in enumerate([results_all, results1, results2, results3], 1):
-                    print('---', step)
+                    # print('---', step)
                     for step_day in step:
                         if step_day[0] == date:
                             day_text = f'{round(step_day[1], 2)} - {step_day[2]}'
@@ -278,7 +278,7 @@ def read_all_out():
         all_out = select(Incoming).filter(
             Incoming.sender.regexp_match(r'\d\d\d \d\d \d\d\d \d\d \d\d'))
         res = session.execute(all_out).scalars().all()
-        print('res read_all_out:', res)
+        print('Все выводы:', res)
         for row in res:
             print(row.id, row.sender)
         return res
