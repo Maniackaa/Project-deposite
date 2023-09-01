@@ -9,7 +9,7 @@ from gspread.utils import rowcol_to_a1
 from config_data.bot_conf import BASE_DIR, conf, get_my_loggers
 from google.oauth2.service_account import Credentials
 
-logger, err_log, *other_log = get_my_loggers()
+logger, err_log, logger1, logger2 = get_my_loggers()
 
 
 def get_creds():
@@ -25,7 +25,18 @@ def get_creds():
     return scoped
 
 
-async def write_to_table(rows: list[list], start_row=1, url=conf.tg_bot.TABLE_1, sheets_num=0):
+async def load_range_values(url=conf.tg_bot.TABLE_1, sheets_num=0, diap='А:А'):
+    logger1.debug(f'Читаем таблицу {url}, лист {sheets_num}, диапазон: {diap}')
+    agcm = gspread_asyncio.AsyncioGspreadClientManager(get_creds)
+    agc = await agcm.authorize()
+    sheet = await agc.open_by_url(url)
+    table = await sheet.get_worksheet(sheets_num)
+    values = await table.get_values(diap)
+    print(values)
+    return values
+
+
+async def write_to_table(rows: list[list], start_row=1, url=conf.tg_bot.TABLE_1, sheets_num=0, delta_col=0):
     """Записывает строки в таблицу"""
     if not rows:
         return
@@ -40,9 +51,9 @@ async def write_to_table(rows: list[list], start_row=1, url=conf.tg_bot.TABLE_1,
 
     last_row = start_row
     print(last_row)
-    logger.debug(f'{rowcol_to_a1(last_row, 1)}:{rowcol_to_a1(last_row + num_rows, num_col)}')
+    logger.debug(f'{rowcol_to_a1(last_row, 1 + delta_col)}:{rowcol_to_a1(last_row + num_rows, num_col + delta_col)}')
     x = await table.batch_update([{
-        'range': f'{rowcol_to_a1(last_row, 1)}:{rowcol_to_a1(last_row + num_rows, num_col)}',
+        'range': f'{rowcol_to_a1(last_row, 1 + delta_col)}:{rowcol_to_a1(last_row + num_rows, num_col + delta_col)}',
         'values': rows,
     }])
     print('x', x)

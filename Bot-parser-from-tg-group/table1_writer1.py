@@ -7,8 +7,8 @@ import aioschedule
 from config_data.bot_conf import get_my_loggers, conf
 from database.db import Incoming, TrashIncoming
 from database.redis_db import r
-from services.db_func import read_new_incomings, get_day_report_rows, read_new_trashincomings
-from services.google_func import write_to_table
+from services.db_func import read_new_incomings, get_day_report_rows, read_new_trashincomings, get_card_volume_rows
+from services.google_func import write_to_table, load_range_values
 
 logger, err_log, logger1, logger2 = get_my_loggers()
 
@@ -18,10 +18,19 @@ async def write_sheets2():
     rows = get_day_report_rows()
     await write_to_table(rows, start_row=2, url=conf.tg_bot.TABLE_1, sheets_num=1)
 
+async def write_sheets3():
+    logger1.info('Добавляем объемы по картам')
+    cards = await load_range_values(url=conf.tg_bot.TABLE_1, sheets_num=2, diap='A:A')
+    cards = [card[0] for card in cards[1:]]
+    logger.debug(f'Прочитанные карты: {cards}')
+    rows = get_card_volume_rows(cards)
+    logger1.debug(F'Объемы по картам: {rows}')
+    await write_to_table(rows, start_row=2, url=conf.tg_bot.TABLE_1, sheets_num=2, delta_col=1)
 
 async def jobs():
     print('sheets2_report')
     aioschedule.every().hour.do(write_sheets2)
+    aioschedule.every().hour.do(write_sheets3)
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(10)
@@ -92,7 +101,8 @@ if __name__ == '__main__':
     logger1.info('Starting Table writer 1')
     try:
         # r.set('table1_trash_last_num', 0)
-        asyncio.run(write_sheets2())
+        # asyncio.run(write_sheets2())
+        # asyncio.run(write_sheets3())
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger1.info('Table writer 1 stopped!')

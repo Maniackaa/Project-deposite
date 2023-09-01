@@ -286,8 +286,29 @@ def read_all_out():
         print(err)
 
 
+def get_card_volume_rows(select_cards: list):
+    """Находит select_cards отправителей платежей и суммирует объем и количество"""
+    try:
+        logger.debug(f'get_card_volume_rows. Карты: {select_cards}')
+        session = Session()
+        cards = select(Incoming.sender, func.sum(Incoming.pay), func.count(Incoming.pay)).where(
+            Incoming.pay > 0).where(
+            Incoming.sender.in_(select_cards)
+        ).group_by(Incoming.sender)
+        result = session.execute(cards).fetchall()
+        rows = []
+        for num, row in enumerate(result, 1):
+            rows.append([row[1], row[2]])
+        print(result)
+        print(rows)
+        return rows
+    except Exception as err:
+        logger1.error('Ошибка при подсчете баланса карт', exc_info=True)
+
+
 if __name__ == '__main__':
     pay = {'response_date': datetime.datetime(2023, 8, 25, 1, 7), 'sender': '+994 70 *** ** 27', 'bank': None, 'pay': 5.0, 'balance': None, 'transaction': 55555150, 'type': 'm10'}
     # print(get_day_report_rows())
     # print(get_out_report_rows())
-    find_new_out()
+    # find_new_out()
+    get_card_volume_rows(['+994 70 *** ** 27'])
