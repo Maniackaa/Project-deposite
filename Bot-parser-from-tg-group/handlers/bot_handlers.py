@@ -95,6 +95,7 @@ async def sms_receiver(message: Message, bot: Bot):
 # Распознавание чеков
 @router.message(F.content_type.in_({'photo', 'document'}))
 async def ocr_photo(message: Message, bot: Bot):
+    logger.debug('Получено фото')
     try:
         start = time.perf_counter()
         if message.content_type == 'photo':
@@ -107,7 +108,7 @@ async def ocr_photo(message: Message, bot: Bot):
             img_path = BASE_DIR / 'photos' / f'{img_id}.jpg'
             await bot.download(message.document, destination=img_path)
         text = img_path_to_str(img_path)
-        print('text', text)
+        logger.debug(f'Распозано с фото:\n{text}')
         patterns = {
             'm10': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).*Получатель (.*) Отправитель (.*) Код транзакции (\d+) Сумма (.+) Статус (.*) .*8',
             'm10_short': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).* (Пополнение.*) Получатель (.*) Код транзакции (\d+) Сумма (.+) Статус (.*) 8.*',
