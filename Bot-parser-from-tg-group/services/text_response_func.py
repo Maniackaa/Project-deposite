@@ -68,15 +68,15 @@ def float_digital(string):
 def response_sms1(fields: list[str], groups: tuple[str]) -> dict[str, str | float]:
     """
     Функия распознавания шаблона 1
-    :param fields: ['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type']
+    :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type']
     :param groups: ('Bloklanmish kart', '4127***6869', '2023-08-22 15:17:19', 'P2P SEND- LEO APP', '29.00', '569.51')
     :return: dict[str, str | float]
     """
     logger.debug('Распознавание шаблона sms1')
     response_fields = {
         'response_date':    {'pos': 2, 'func': date_response},
-        'sender':           {'pos': 1},
-        'bank':             {'pos': 3},
+        'recipient':        {'pos': 1},
+        'sender':           {'pos': 3},
         'pay':              {'pos': 4, 'func': float_digital},
         'balance':          {'pos': 5, 'func': float_digital},
     }
@@ -96,14 +96,14 @@ def response_sms1(fields: list[str], groups: tuple[str]) -> dict[str, str | floa
 def response_sms2(fields, groups) -> dict[str, str | float]:
     """
     Функия распознавания шаблона 1
-    :param fields: ['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type']
+    :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type']
     :param groups: ('+80.00', '4127*6869', '2023-08-22 15:17:19', 'P2P SEND- LEO APP', '569.51')
     :return: dict[str, str | float]
     """
     response_fields = {
         'response_date':    {'pos': 2, 'func': date_response},
-        'sender':           {'pos': 1},
-        'bank':             {'pos': 3},
+        'recipient':           {'pos': 1},
+        'sender':             {'pos': 3},
         'pay':              {'pos': 0, 'func': float_digital},
         'balance':          {'pos': 4, 'func': float_digital},
     }
@@ -115,21 +115,21 @@ def response_sms2(fields, groups) -> dict[str, str | float]:
         err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
         raise err
 
-sms2 = response_sms2(['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type'], ('-1 080.00', '4127*6869', '2023-08-22 15:17:19', 'P2P SEND- LEO APP', '569.51'))
+sms2 = response_sms2(['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type'], ('-1 080.00', '4127*6869', '2023-08-22 15:17:19', 'P2P SEND- LEO APP', '569.51'))
 print(sms2)
 
 def response_sms3(fields, groups) -> dict[str, str | float]:
     """
     Функия распознавания шаблона 1
-    :param fields: ['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type']
+    :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type']
     :param groups: ('5.00', '1000020358154 terminal payment ', '2023-08-19 02:30:14', '319.38')
                    ('10.01', 'ACCOUNT TO ACCOUNT TRANSFER   ', '2023-08-23 00:00:00', '222.96')
     :return: dict[str, str | float]
     """
     response_fields = {
         'response_date':    {'pos': 2, 'func': date_response},
-        'sender':           {'pos': 1, 'func': lambda x: x.split('terminal payment')[0].strip() if 'terminal payment' in x else x},
-        'bank':             {'pos': 0, 'func': lambda x: 'Hesaba medaxil'},
+        # 'sender':           {'pos': 1, 'func': lambda x: x.split('terminal payment')[0].strip() if 'terminal payment' in x else x},
+        'sender':           {'pos': 1},
         'pay':              {'pos': 0, 'func': float_digital},
         'balance':          {'pos': 3, 'func': float_digital},
     }

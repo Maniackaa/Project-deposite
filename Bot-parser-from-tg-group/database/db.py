@@ -36,6 +36,7 @@ class Incoming(Base):
                                     comment='Первичный ключ')
     register_date: Mapped[time] = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.datetime.now(tz=tz))
     response_date: Mapped[time] = mapped_column(DateTime(timezone=True), nullable=True)
+    recipient: Mapped[str] = mapped_column(String(50), nullable=True)
     sender: Mapped[str] = mapped_column(String(50), nullable=True)
     bank: Mapped[str] = mapped_column(String(50), nullable=True)
     pay: Mapped[float] = mapped_column(Float())

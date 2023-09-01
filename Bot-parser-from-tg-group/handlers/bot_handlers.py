@@ -50,7 +50,7 @@ async def sms_receiver(message: Message, bot: Bot):
             'sms2': response_sms2,
             'sms3': response_sms3,
         }
-        fields = ['response_date', 'sender', 'bank', 'pay', 'balance',
+        fields = ['response_date', 'recipient', 'sender', 'pay', 'balance',
                   'transaction', 'type']
         text_sms_type = ''
         responsed_pay = {}
@@ -116,7 +116,7 @@ async def ocr_photo(message: Message, bot: Bot):
             'm10': response_m10,
             'm10_short': response_m10_short,
         }
-        fields = ['response_date', 'sender', 'bank', 'pay', 'balance',
+        fields = ['response_date', 'recipient', 'sender', 'bank', 'pay', 'balance',
                   'transaction', 'type', 'status']
         text_sms_type = ''
         responsed_pay = {}
