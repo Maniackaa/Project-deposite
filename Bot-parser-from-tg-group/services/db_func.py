@@ -293,7 +293,7 @@ def get_card_volume_rows(select_cards: list):
         session = Session()
         cards = select(Incoming.sender, func.sum(Incoming.pay), func.count(Incoming.pay)).where(
             Incoming.pay > 0).where(
-            Incoming.sender.in_(select_cards)
+            Incoming.recipient.in_(select_cards)
         ).group_by(Incoming.sender)
         result = session.execute(cards).fetchall()
         rows = []
