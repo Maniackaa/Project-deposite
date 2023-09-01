@@ -132,7 +132,7 @@ async def ocr_photo(message: Message, bot: Bot):
                 status = responsed_pay.pop('status')
                 break
 
-        if responsed_pay.get('sender') == '' or status.lower() != 'успешно':
+        if status.lower() != 'успешно':
             text_sms_type = 'trash'
 
         if text_sms_type == 'trash':

@@ -63,7 +63,7 @@ def response_m10(fields, groups) -> dict[str, str | float]:
 
 def response_m10_short(fields, groups) -> dict[str, str | float]:
     """
-    Функия распознавания шаблона m10
+    Функия распознавания шаблона m10_short
     :param fields: ['response_date', 'sender', 'bank', 'pay', 'balance', 'transaction', 'type', 'status']
     :param groups: ('25.08.2023 23:28', '+994 51 927 05 68', '', '55874117', '500.00 №', 'Ошибка ')
     :return: dict[str, str | float]
