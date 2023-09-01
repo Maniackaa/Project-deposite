@@ -95,7 +95,7 @@ async def sms_receiver(message: Message, bot: Bot):
 # Распознавание чеков
 @router.message(F.content_type.in_({'photo', 'document'}))
 async def ocr_photo(message: Message, bot: Bot):
-    logger.debug('Получено фото')
+    logger.debug('\nПолучено фото')
     try:
         start = time.perf_counter()
         if message.content_type == 'photo':
@@ -103,12 +103,11 @@ async def ocr_photo(message: Message, bot: Bot):
             img_path = BASE_DIR / 'photos' / f'{img_id}.jpg'
             await bot.download(message.photo[-1], destination=img_path)
         if message.content_type == 'document':
-            print(message.document)
             img_id = message.document.file_id
             img_path = BASE_DIR / 'photos' / f'{img_id}.jpg'
             await bot.download(message.document, destination=img_path)
         text = img_path_to_str(img_path)
-        logger.debug(f'Распозано с фото:\n{text}')
+        logger.debug(f'Распозано с фото:{text}')
         patterns = {
             'm10': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).*Получатель (.*) Отправитель (.*) Код транзакции (\d+) Сумма (.+) Статус (.*) .*8',
             'm10_short': r'.*(\d\d\.\d\d\.\d\d\d\d \d\d:\d\d).* (Пополнение.*) Получатель (.*) Код транзакции (\d+) Сумма (.+) Статус (.*) 8.*',
@@ -124,7 +123,9 @@ async def ocr_photo(message: Message, bot: Bot):
         errors = []
         status = ''
         for sms_type, pattern in patterns.items():
+            logger.debug(f'Проверяем паттерн {sms_type}')
             search_result = re.findall(pattern, text)
+            logger.debug(f'{search_result}: {bool(search_result)}')
             if search_result:
                 logger.debug(f'Найдено: {sms_type}: {search_result}')
                 text_sms_type = sms_type
@@ -133,12 +134,13 @@ async def ocr_photo(message: Message, bot: Bot):
                 status = responsed_pay.pop('status')
                 break
 
-        if status.lower() != 'успешно':
+        # Если шаблон распознан и статус не успешно:
+        if status.lower() != 'успешно' and text_sms_type != '':
             text_sms_type = 'trash'
 
         if text_sms_type == 'trash':
             # Добавляем в мусор
-            logger.debug('Пустой отправитель. В мусор')
+            logger.debug('Статус не успешно. В мусор')
             trash_text = ' | '.join([f'{key}: {val}' for (key, val) in responsed_pay.items()])
             add_to_trash(trash_text)
             await message.reply('Кривой чек. В мусор')
