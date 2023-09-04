@@ -99,6 +99,7 @@ async def sms_receiver(message: Message, bot: Bot):
 async def ocr_photo(message: Message, bot: Bot):
     logger.debug('\nПолучено фото')
     try:
+        chat_type = message.chat.type
         message_url = message.get_url(force_private=True)
         start = time.perf_counter()
         if message.content_type == 'photo':
@@ -167,7 +168,8 @@ async def ocr_photo(message: Message, bot: Bot):
                 # Действия с дубликатом
                 logger.debug('Дубликат')
                 try:
-                    await message.delete()
+                    if chat_type != 'private':
+                        await message.delete()
                 except:
                     pass
         else:
@@ -185,6 +187,13 @@ async def ocr_photo(message: Message, bot: Bot):
         if errors:
             await send_alarm_to_admin(text, errors, bot)
         print(f'{round(time.perf_counter() - start, 2)} сек.')
+
+        if chat_type == 'private':
+            resp_text = 'Распознано:\n\n'
+            for key, val in responsed_pay.items():
+                if val:
+                    resp_text += str(val) + '\n'
+            await message.answer(resp_text)
 
     except Exception as err:
         err_log.error(f'Неизвестная ошибка при распознавании скриншота\n', exc_info=True)
