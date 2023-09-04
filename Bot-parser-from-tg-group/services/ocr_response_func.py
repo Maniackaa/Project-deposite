@@ -19,7 +19,7 @@ logger, err_log, *other_log = get_my_loggers()
 
 def img_path_to_str(path):
     img = cv2.imdecode(np.fromfile(path, dtype=np.uint8), cv2.COLOR_RGB2GRAY)
-    _, binary = cv2.threshold(img, 65, 255, cv2.THRESH_BINARY)
+    _, binary = cv2.threshold(img, 68, 255, cv2.THRESH_BINARY)
     string = pytesseract.image_to_string(binary, lang='rus')
     string = string.replace('\n', ' ')
     return string
