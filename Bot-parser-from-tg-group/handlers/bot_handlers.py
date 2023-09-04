@@ -40,6 +40,7 @@ async def sms_receiver(message: Message, bot: Bot):
 
     try:
         text = message.text
+        message_url = message.get_url(force_private=True)
         patterns = {
             'sms1': r'^Imtina:(.*)\nKart:(.*)\nTarix:(.*)\nMercant:(.*)\nMebleg:(.*) .+\nBalans:(.*) ',
             'sms2': r'^Mebleg:(.+) AZN.*\nKart:(.*)\nTarix:(.*)\nMerchant:(.*)\nBalans:(.*) .*',
@@ -64,6 +65,7 @@ async def sms_receiver(message: Message, bot: Bot):
                 errors = responsed_pay.pop('errors')
                 break
 
+        responsed_pay['message_url'] = message_url
         if text_sms_type:
             logger.info(f'Сохраняем в базу {responsed_pay}')
             addet = add_pay_to_db(responsed_pay)
@@ -97,6 +99,7 @@ async def sms_receiver(message: Message, bot: Bot):
 async def ocr_photo(message: Message, bot: Bot):
     logger.debug('\nПолучено фото')
     try:
+        message_url = message.get_url(force_private=True)
         start = time.perf_counter()
         if message.content_type == 'photo':
             img_id = message.photo[-1].file_id
@@ -133,6 +136,8 @@ async def ocr_photo(message: Message, bot: Bot):
                 errors = responsed_pay.pop('errors')
                 status = responsed_pay.pop('status')
                 break
+
+        responsed_pay['message_url'] = message_url
 
         # Если шаблон распознан и статус не успешно:
         if status.lower() != 'успешно' and text_sms_type != '':

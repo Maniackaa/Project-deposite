@@ -43,6 +43,7 @@ class Incoming(Base):
     balance: Mapped[float] = mapped_column(Float(), nullable=True)
     transaction: Mapped[str] = mapped_column(Integer(), nullable=True, unique=True)
     type: Mapped[str] = mapped_column(String(20), default='unknown')
+    message_url: Mapped[str] = mapped_column(String(100), nullable=True)
 
     def __repr__(self):
         return f'{self.id}. {self.register_date}'

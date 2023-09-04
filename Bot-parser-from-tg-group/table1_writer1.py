@@ -63,6 +63,7 @@ async def main():
                     incoming.pay,
                     incoming.balance,
                     incoming.transaction,
+                    incoming.message_url
                 ]
                 rows.append(row)
             if rows:
