@@ -292,7 +292,7 @@ def get_card_volume_rows(select_cards: list):  # ['4127*4297', '+994 51 927 05 6
     try:
         logger.debug(f'get_card_volume_rows. Карты: {select_cards}')
         session = Session()
-        cards = select(Incoming.recipient, func.sum(Incoming.pay), func.count(Incoming.pay)).where(
+        cards = select(Incoming.recipient, func.sum(Incoming.pay), func.count(Incoming.pay), func.max(Incoming.response_date)).where(
             Incoming.pay > 0).where(
             Incoming.recipient.in_(select_cards)
         ).group_by(Incoming.recipient)
@@ -301,13 +301,14 @@ def get_card_volume_rows(select_cards: list):  # ['4127*4297', '+994 51 927 05 6
         logger.debug(f'card_volume: {results}')
         rows = []
         for index_card, card in enumerate(select_cards, 1):
-            row = [index_card, card, 0, 0]
+            row = [index_card, card, 0, 0, '-']
             for result in results:
                 # ('+994 51 927 05 68', 197.0, 11)
                 if result[0] == card:
                     row[1] = result[0]
                     row[2] = result[1]
                     row[3] = result[2]
+                    row[4] = result[3].strftime('%Y.%m.%d %H:%M')
 
             rows.append(row)
         return rows
