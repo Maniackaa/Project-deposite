@@ -77,12 +77,12 @@ LOGGING_CONFIG = {
             'propagate': True
         },
         'table1_logger': {
-            'handlers': ['stream_handler', 'rotating_file_handler'],
+            'handlers': ['stream_handler', 'table1_file_handler'],
             'level': 'DEBUG',
             'propagate': True
         },
         'table2_logger': {
-            'handlers': ['stream_handler', 'rotating_file_handler'],
+            'handlers': ['stream_handler', 'table2_file_handler'],
             'level': 'DEBUG',
             'propagate': True
         },
