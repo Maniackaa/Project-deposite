@@ -286,8 +286,9 @@ def read_all_out():
         print(err)
 
 
-def get_card_volume_rows(select_cards: list):
+def get_card_volume_rows(select_cards: list):  # ['4127*4297', '+994 51 927 05 68', '4127*6822']
     """Находит select_cards отправителей платежей и суммирует объем и количество"""
+
     try:
         logger.debug(f'get_card_volume_rows. Карты: {select_cards}')
         session = Session()
@@ -296,23 +297,19 @@ def get_card_volume_rows(select_cards: list):
             Incoming.recipient.in_(select_cards)
         ).group_by(Incoming.recipient)
         results = session.execute(cards).fetchall()
+        # [('4127*4297', 7926.64, 319), ('+994 51 927 05 68', 151542.00999999995, 1809), ('4127*6822', 41097.64, 1420)]
         logger.debug(f'card_volume: {results}')
         rows = []
         for index_card, card in enumerate(select_cards, 1):
+            row = [index_card, card, 0, 0]
             for result in results:
                 # ('+994 51 927 05 68', 197.0, 11)
-
-                row = [index_card, card, 0, 0]
                 if result[0] == card:
                     row[1] = result[0]
                     row[2] = result[1]
                     row[3] = result[2]
 
             rows.append(row)
-        # for num, row in enumerate(result, 1):
-        #     rows.append([row[0], row[1], row[2]])
-        # print(result)
-        print(rows)
         return rows
     except Exception as err:
         logger1.error('Ошибка при подсчете баланса карт', exc_info=True)
