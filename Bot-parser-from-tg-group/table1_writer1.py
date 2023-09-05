@@ -103,7 +103,7 @@ if __name__ == '__main__':
     try:
         # r.set('table1_trash_last_num', 0)
         # asyncio.run(write_sheets2())
-        # asyncio.run(write_sheets3())
+        asyncio.run(write_sheets3())
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger1.info('Table writer 1 stopped!')

@@ -1,4 +1,7 @@
+from itertools import repeat
+
 import numpy as np
+import pandas as pd
 import pytesseract
 import cv2
 import datetime
@@ -6,6 +9,8 @@ import datetime
 
 from pathlib import Path
 import time
+
+from pandas import Series
 
 BASE_DIR = Path(__file__).resolve().parent
 path = BASE_DIR / 'image3.jpg'
@@ -88,19 +93,19 @@ def response_screenshot_template(text):
 from collections import Counter
 
 
-def check_pair(path_pair):
-    path = BASE_DIR / path_pair[0]
+def check_pair(args):
+    path_pair, black = args
+    print('black', black)
+    path = BASE_DIR / 'images' / path_pair[0]
     nums = set()
-    for i in range(255):
+    for i in range(40, 240):
         start = time.perf_counter()
         img = cv2.imdecode(np.fromfile(path, dtype=np.uint8), cv2.COLOR_RGB2GRAY)
-        _, binary = cv2.threshold(img, i, 255, cv2.THRESH_BINARY)
+        _, binary = cv2.threshold(img, i, black, cv2.THRESH_BINARY)
         # plt.imshow(binary, cmap='gray')
         # plt.show()
         string = pytesseract.image_to_string(binary, lang='rus')
-        # print(string)
         result = response_screenshot_template(string)
-        # print(result)
 
         if result == path_pair[1]:
             nums.add(i)
@@ -141,13 +146,14 @@ path_test = [
 
     ]
 
+
 from multiprocessing import Pool
 
-def pool_handler():
+
+def pool_handler(black):
     start = time.perf_counter()
     p = Pool(4)
-    res = p.map(check_pair, path_test)
-    print(res)
+    res = p.map(check_pair, zip(path_test, repeat(black)))
     counter = Counter()
     for r in res:
         counter.update(r)
@@ -155,9 +161,34 @@ def pool_handler():
     last_num = 0
     for key, val in sorted(counter.items()):
         delta = key - last_num
-        print(f'{delta if delta == 1 else "--" + str(delta)}. {key}: {val}')
+        # print(f'{delta if delta == 1 else "--" + str(delta)}. {key}: {val}')
         last_num = key
     print(time.perf_counter() - start)
+    return counter
+
 
 if __name__ == '__main__':
-    pool_handler()
+    df = pd.read_excel('map.xlsx', index_col=[0])
+    df.columns = sorted(df.columns, reverse=True)
+    print(df)
+    bad_black = list()
+    maximum = max(df.max())
+    print(maximum)
+    for col in df.columns:
+        is_good = any(df[col] == maximum)
+        print(col, is_good)
+        if not is_good:
+            bad_black.append(col)
+    print('bad_black', bad_black)
+
+
+
+
+    # df = pd.DataFrame(index=range(1, 256))
+    # for black in range(255, 0, -1):
+    #     print(black, df.columns, black in df.columns)
+    #     if black in df.columns:
+    #         continue
+    #     row = pool_handler(black)
+    #     df.loc[:, black] = row
+    #     df.to_excel('map.xlsx')

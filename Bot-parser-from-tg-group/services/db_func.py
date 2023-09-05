@@ -291,15 +291,27 @@ def get_card_volume_rows(select_cards: list):
     try:
         logger.debug(f'get_card_volume_rows. Карты: {select_cards}')
         session = Session()
-        cards = select(Incoming.sender, func.sum(Incoming.pay), func.count(Incoming.pay)).where(
+        cards = select(Incoming.recipient, func.sum(Incoming.pay), func.count(Incoming.pay)).where(
             Incoming.pay > 0).where(
             Incoming.recipient.in_(select_cards)
-        ).group_by(Incoming.sender)
-        result = session.execute(cards).fetchall()
+        ).group_by(Incoming.recipient)
+        results = session.execute(cards).fetchall()
+        logger.debug(f'card_volume: {results}')
         rows = []
-        for num, row in enumerate(result, 1):
-            rows.append([row[1], row[2]])
-        print(result)
+        for index_card, card in enumerate(select_cards, 1):
+            for result in results:
+                # ('+994 51 927 05 68', 197.0, 11)
+
+                row = [index_card, card, 0, 0]
+                if result[0] == card:
+                    row[1] = result[0]
+                    row[2] = result[1]
+                    row[3] = result[2]
+
+            rows.append(row)
+        # for num, row in enumerate(result, 1):
+        #     rows.append([row[0], row[1], row[2]])
+        # print(result)
         print(rows)
         return rows
     except Exception as err:
