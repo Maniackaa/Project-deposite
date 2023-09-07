@@ -169,7 +169,8 @@ def pool_handler(black):
 
 if __name__ == '__main__':
     df = pd.read_excel('map.xlsx', index_col=[0])
-    df.columns = sorted(df.columns, reverse=True)
+    df = df.reindex(columns=sorted(list(df.columns), reverse=True))
+    df.to_excel('exit_map.xlsx')
     print(df)
     bad_black = list()
     maximum = max(df.max())
