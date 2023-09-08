@@ -168,20 +168,25 @@ def pool_handler(black):
 
 
 if __name__ == '__main__':
-    df = pd.read_excel('map.xlsx', index_col=[0])
+    if Path('map.xlsx').exists():
+        df = pd.read_excel('map.xlsx', index_col=[0])
+    else:
+        df = pd.DataFrame(index=range(1, 256))
     df = df.reindex(columns=sorted(list(df.columns), reverse=True))
     df.to_excel('exit_map.xlsx')
     print(df)
-    bad_black = list()
-    maximum = max(df.max())
-    print(maximum)
-    for col in df.columns:
-        is_good = any(df[col] == maximum)
-        print(col, is_good)
-        if not is_good:
-            bad_black.append(col)
-    print('bad_black', bad_black)
-
+    try:
+        bad_black = list()
+        maximum = max(df.max())
+        print(maximum)
+        for col in df.columns:
+            is_good = any(df[col] == maximum)
+            print(col, is_good)
+            if not is_good:
+                bad_black.append(col)
+        print('bad_black', bad_black)
+    except Exception:
+        pass
 
 
 
