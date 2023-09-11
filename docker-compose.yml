@@ -108,7 +108,7 @@ services:
     depends_on:
       -   db_postgres
     volumes:
-      - static:/app/static/
+      - static:/app/collected_static/
       - media:/app/media/
 
   nginx:

@@ -9,9 +9,10 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = (os.getenv('DEBUG', 'False').lower() == 'true')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
-
+CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','https://*.127.0.0.1','http://194.87.252.190','https://194.87.252.190']
 
 MY_APPS = [
+    'users.apps.UsersConfig',
     'deposit.apps.DepositConfig',
 ]
 
@@ -103,7 +104,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = BASE_DIR / 'collected_static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
