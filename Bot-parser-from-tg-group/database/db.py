@@ -41,7 +41,7 @@ class Incoming(Base):
     bank: Mapped[str] = mapped_column(String(50), nullable=True)
     pay: Mapped[float] = mapped_column(Float())
     balance: Mapped[float] = mapped_column(Float(), nullable=True)
-    transaction: Mapped[str] = mapped_column(Integer(), nullable=True, unique=True)
+    transaction: Mapped[int] = mapped_column(Integer(), nullable=True, unique=True)
     type: Mapped[str] = mapped_column(String(20), default='unknown')
     message_url: Mapped[str] = mapped_column(String(100), nullable=True)
 

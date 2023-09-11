@@ -11,6 +11,7 @@ class User(AbstractUser):
     ROLES = (
         (USER, "Пользователь"),
         (ADMIN, "Администратор"),
+        (STAFF, "Персонал"),
     )
 
     first_name = models.CharField(

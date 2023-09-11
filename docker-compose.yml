@@ -17,7 +17,7 @@ services:
 #      - ./postgres/postgres-data.conf:/var/lib/postgresql/data
       - pg_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "15432:5432"
     restart: always
 
 
@@ -106,7 +106,7 @@ services:
     restart: always
     env_file: .env
     depends_on:
-      -   db_postgres
+      - db_postgres
     volumes:
       - static:/app/collected_static/
       - media:/app/media/

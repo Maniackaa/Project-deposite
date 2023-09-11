@@ -5,15 +5,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+print(BASE_DIR)
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = (os.getenv('DEBUG', 'False').lower() == 'true')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
-CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','https://*.127.0.0.1','http://194.87.252.190','https://194.87.252.190']
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
+#CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','https://*.127.0.0.1','http://194.87.252.190','https://194.87.252.190']
 
 MY_APPS = [
     'users.apps.UsersConfig',
     'deposit.apps.DepositConfig',
+    'api.apps.ApiConfig',
 ]
 
 INSTALLED_APPS = [
@@ -23,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 ] + MY_APPS
 
 MIDDLEWARE = [
@@ -114,3 +118,30 @@ STATIC_ROOT = BASE_DIR / 'collected_static'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'users.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser'
+    ],
+
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+}
+

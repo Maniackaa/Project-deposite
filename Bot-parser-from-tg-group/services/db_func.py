@@ -13,7 +13,7 @@ logger, err_log, logger1, logger2 = get_my_loggers()
 
 def check_transaction(transaction_num) -> bool:
     """Возвразает True если транзакция есть в базе"""
-    logger.debug(f'Проверка наличия транзакции')
+    logger.debug(f'Проверка наличия транзакции {transaction_num}')
     try:
         session = Session()
         with session:
