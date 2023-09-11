@@ -149,6 +149,7 @@ def response_sms4(fields, groups) -> dict[str, str | float]:
     :param groups: ('+80.00', '*5559', '2023-09-11 16:15', 'www.birbank.az', '861.00')
     :return: dict[str, str | float]
     """
+    logger.debug(f'fields:{fields} groups:{groups}')
     response_fields = {
         'response_date':    {'pos': 2, 'func': date_response},
         'recipient':           {'pos': 1},

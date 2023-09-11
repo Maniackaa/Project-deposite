@@ -45,7 +45,7 @@ async def sms_receiver(message: Message, bot: Bot):
             'sms1': r'^Imtina:(.*)\nKart:(.*)\nTarix:(.*)\nMercant:(.*)\nMebleg:(.*) .+\nBalans:(.*) ',
             'sms2': r'^Mebleg:(.+) AZN.*\nKart:(.*)\nTarix:(.*)\nMerchant:(.*)\nBalans:(.*) .*',
             'sms3': r'^.+[medaxil|mexaric] (.+?) AZN (.*)(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d).+Balance: (.+?) AZN.*',
-            'sms4': r'^Amount:(.+) AZN.*\nCard:(.*)\nDate:(.*)\nMerchant:(.*)\nBalance:(.*) .*|^Mebleg:(.+) AZN.*\nKart:(.*)\nTarix:(.*)\nMerchant:(.*)\nBalans:(.*) .*'
+            'sms4': r'^Amount:(.+?) AZN[\n]?.*\nCard:(.*)\nDate:(.*)\nMerchant:(.*)\nBalance:(.*) .*'
         }
         response_func = {
             'sms1': response_sms1,
