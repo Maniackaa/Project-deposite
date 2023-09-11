@@ -4,6 +4,8 @@ volumes:
   pg_data:
   pgadmin_data:
   redis_data:
+  static:
+  media:
 
 services:
   db_postgres:
@@ -15,13 +17,13 @@ services:
 #      - ./postgres/postgres-data.conf:/var/lib/postgresql/data
       - pg_data:/var/lib/postgresql/data
     ports:
-      - "15432:5432"
+      - "5432:5432"
     restart: always
 
 
   pgadmin:
     container_name: pgadmin_container_deposit
-    image: dpage/pgadmin4:7.5
+    image: dpage/pgadmin4:7.6
     env_file: .env
     environment:
       PGADMIN_DEFAULT_EMAIL: $PGADMIN_DEFAULT_EMAIL
@@ -89,3 +91,35 @@ services:
       - db_postgres
     volumes:
       - ./logs/Table2:/app/logs
+
+  ftp-grabber:
+    restart: always
+    build: ftp
+    command: python3 ftp_test.py
+    volumes:
+      - ./ftp/screenshots:/app/screenshots
+    ports:
+      - "2121:2121"
+
+  backend:
+    build: ./backend_deposit
+    restart: always
+    env_file: .env
+    depends_on:
+      -   db_postgres
+    volumes:
+      - static:/app/static/
+      - media:/app/media/
+
+  nginx:
+    image: nginx:1.19.3
+    env_file: .env
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static:/var/html/static/
+      - media:/var/html/media/

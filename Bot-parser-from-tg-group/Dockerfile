@@ -1,4 +1,4 @@
-FROM python:3.10.11
+FROM python:3.10
 WORKDIR /app
 RUN apt-get update && apt-get install libpq-dev libgl1 tesseract-ocr -y
 COPY requirements.txt .
