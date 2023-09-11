@@ -95,7 +95,7 @@ def response_sms1(fields: list[str], groups: tuple[str]) -> dict[str, str | floa
 
 def response_sms2(fields, groups) -> dict[str, str | float]:
     """
-    Функия распознавания шаблона 1
+    Функия распознавания шаблона 2
     :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type']
     :param groups: ('+80.00', '4127*6869', '2023-08-22 15:17:19', 'P2P SEND- LEO APP', '569.51')
     :return: dict[str, str | float]
@@ -120,7 +120,7 @@ print(sms2)
 
 def response_sms3(fields, groups) -> dict[str, str | float]:
     """
-    Функия распознавания шаблона 1
+    Функия распознавания шаблона 3
     :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type']
     :param groups: ('5.00', '1000020358154 terminal payment ', '2023-08-19 02:30:14', '319.38')
                    ('10.01', 'ACCOUNT TO ACCOUNT TRANSFER   ', '2023-08-23 00:00:00', '222.96')
@@ -142,4 +142,24 @@ def response_sms3(fields, groups) -> dict[str, str | float]:
         raise err
 
 
-
+def response_sms4(fields, groups) -> dict[str, str | float]:
+    """
+    Функия распознавания шаблона 4
+    :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type']
+    :param groups: ('+80.00', '*5559', '2023-09-11 16:15', 'www.birbank.az', '861.00')
+    :return: dict[str, str | float]
+    """
+    response_fields = {
+        'response_date':    {'pos': 2, 'func': date_response},
+        'recipient':           {'pos': 1},
+        'sender':             {'pos': 3},
+        'pay':              {'pos': 0, 'func': float_digital},
+        'balance':          {'pos': 4, 'func': float_digital},
+    }
+    sms_type = 'sms4'
+    try:
+        result = response_operations(fields, groups, response_fields, sms_type)
+        return result
+    except Exception as err:
+        err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
+        raise err

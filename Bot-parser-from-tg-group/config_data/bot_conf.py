@@ -170,4 +170,4 @@ print(conf)
 def get_my_loggers():
     import logging.config
     logging.config.dictConfig(LOGGING_CONFIG)
-    return logging.getLogger('bot_logger'), logging.getLogger('errors_logger')
+    return logging.getLogger('bot_logger'), logging.getLogger('errors_logger'), logging.getLogger('table1_logger'),  logging.getLogger('table2_logger')
