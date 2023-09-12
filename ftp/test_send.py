@@ -1,7 +1,7 @@
 import requests
 
 from config_data.bot_conf import get_my_loggers
-from ftp.config_data.bot_conf import BASE_DIR
+from ftp.config_data.ftp_conf import BASE_DIR
 
 path = BASE_DIR / 'screenshots'
 files = list(path.glob('*.jpg'))

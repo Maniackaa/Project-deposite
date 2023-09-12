@@ -95,7 +95,7 @@ services:
   ftp-grabber:
     restart: always
     build: ftp
-    command: python3 ftp_test.py
+    command: python3 ftp_grabber.py
     volumes:
       - ./ftp/screenshots:/app/screenshots
     ports:
