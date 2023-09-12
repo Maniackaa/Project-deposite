@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  ftp_grabber:
+  grabber:
     container_name: ftp_grabber
     build: .
     env_file: .env
