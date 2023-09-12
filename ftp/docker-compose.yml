@@ -6,7 +6,7 @@ services:
     build: .
     env_file: .env
     volumes:
-      - ./logs:/app/logs
+      - ./logs/ftp_grabber:/app/logs
       - ./screenshots:/app/screenshots
     ports:
       - "$FTP_PORT:$FTP_PORT"

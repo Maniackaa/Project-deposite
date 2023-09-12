@@ -110,6 +110,7 @@ services:
     volumes:
       - static:/app/collected_static/
       - media:/app/media/
+      #- ./backend_deposit/media:/app/media/
 
   nginx:
     image: nginx:1.19.3
