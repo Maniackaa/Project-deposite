@@ -33,7 +33,3 @@ def main():
         except Exception as err:
             logger.debug(err)
             time.sleep(1)
-
-
-if __name__ == '__main__':
-    main()
