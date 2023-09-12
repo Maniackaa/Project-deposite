@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  db_postgres:
+  ftp_grabber:
     container_name: ftp_grabber
     build: .
     env_file: .env
