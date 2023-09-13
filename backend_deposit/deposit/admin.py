@@ -5,7 +5,7 @@ from deposit.models import Incoming, BadScreen
 
 class IncomingAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'recipient', 'sender', 'pay', 'transaction', 'type', 'image', 'worker'
+        'id', 'register_date', 'response_date', 'recipient', 'sender', 'pay', 'transaction', 'type', 'image', 'worker'
     )
 
 
