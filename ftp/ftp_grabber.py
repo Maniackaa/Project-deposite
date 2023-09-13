@@ -29,7 +29,7 @@ def main():
                     except all_errors as error:
                         logger.debug(f'Ошибка при удалении файла {file}: {error}')
             logger.debug(f'Время обработки файла: {time.perf_counter() - start}')
-            time.sleep(1)
+            time.sleep(0.1)
         except Exception as err:
             logger.debug(err)
             time.sleep(1)

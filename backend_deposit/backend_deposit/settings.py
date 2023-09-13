@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+
+import pytz
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -99,6 +101,7 @@ LANGUAGE_CODE = 'ru-RU'
 
 # TIME_ZONE = 'UTC'
 TIME_ZONE = os.getenv('TIMEZONE')
+TZ = pytz.timezone(TIME_ZONE)
 
 USE_I18N = True
 

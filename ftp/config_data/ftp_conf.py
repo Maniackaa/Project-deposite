@@ -67,6 +67,8 @@ class Ftp:
     FTP_USER: str
     FTP_PASSWD: str
     FTP_TIMEOUT: float
+    WORKER: str
+    ENDPOINT: str
 
 
 @dataclass
@@ -81,6 +83,8 @@ def load_config(path=None) -> Config:
                           FTP_USER=os.getenv('FTP_USER'),
                           FTP_PASSWD=os.getenv('FTP_PASSWD'),
                           FTP_TIMEOUT=float(os.getenv('FTP_TIMEOUT')),
+                          WORKER=os.getenv('WORKER'),
+                          ENDPOINT=os.getenv('ENDPOINT'),
                           ),
                   )
 

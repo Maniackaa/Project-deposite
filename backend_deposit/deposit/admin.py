@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
-from deposit.models import Incoming, Screen
+from deposit.models import Incoming, BadScreen
 
 admin.site.register(Incoming)
-admin.site.register(Screen)
+admin.site.register(BadScreen)
