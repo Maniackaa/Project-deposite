@@ -2,5 +2,18 @@ from django.contrib import admin
 
 from deposit.models import Incoming, BadScreen
 
-admin.site.register(Incoming)
-admin.site.register(BadScreen)
+
+class IncomingAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'pay', 'transaction', 'type', 'image'
+    )
+
+
+class BadScreenAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'transaction', 'type', 'image'
+    )
+
+
+admin.site.register(Incoming, IncomingAdmin)
+admin.site.register(BadScreen, BadScreenAdmin)

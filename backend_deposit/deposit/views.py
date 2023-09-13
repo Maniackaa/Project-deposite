@@ -65,12 +65,12 @@ def screen(request: Request):
         logger.debug(serializer.errors)
         is_duplicate_incoming = BadScreen.objects.filter(transaction=transaction).exists()
         is_duplicate_trash = Incoming.objects.filter(transaction=transaction).exists()
-        if not is_duplicate_trash and not is_duplicate_incoming:
+        if is_duplicate_trash or is_duplicate_incoming:
+            return HttpResponse(status=status.HTTP_200_OK,
+                                reason='duplicate',
+                                charset='utf-8')
+        else:
             BadScreen.objects.create(name=name, worker=worker, image=image, transaction=transaction, type=sms_type)
             return HttpResponse(status=status.HTTP_200_OK,
                                 reason='trash',
-                                charset='utf-8')
-        else:
-            return HttpResponse(status=status.HTTP_200_OK,
-                                reason='trash_duplicate',
                                 charset='utf-8')
