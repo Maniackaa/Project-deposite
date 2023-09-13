@@ -12,3 +12,12 @@ services:
       - "$FTP_PORT:$FTP_PORT"
     restart: always
 
+  sender:
+    container_name: ftp_sender
+    build: .
+    env_file: .env
+    command: python3 ftp_sender.py
+    volumes:
+      - ./logs/ftp_sender:/app/logs
+      - ./screenshots:/app/screenshots
+    restart: always

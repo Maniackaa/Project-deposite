@@ -16,6 +16,7 @@ WORKER = ftp_conf.ftp.WORKER
 def main():
     while True:
         try:
+            global_start = time.perf_counter()
             files = list(path.glob('*.jpg'))
             for file in files:
                 try:
@@ -23,9 +24,9 @@ def main():
                     logger.debug(f'Отправляем {file.name, file.lstat().st_size}')
                     with open(file, "rb") as binary:
                         screen = {'image': binary}
-                        response = requests.post(ENDPOINT, data={'name': file.name, 'WORKER': WORKER}, files=screen, timeout=1)
+                        response = requests.post(ENDPOINT, data={'name': file.name, 'WORKER': WORKER}, files=screen, timeout=10)
                         reason = response.reason
-                        print(reason)
+                        logger.debug(f'reason: {reason}')
                         logger.debug(f'{response, response.status_code}')
                         logger.debug(f'Время отправки: {time.perf_counter() - start}')
 
@@ -34,10 +35,12 @@ def main():
                         logger.debug(f'Скрин удален')
                     else:
                         pass
-                    break
                 except Exception as err:
                     logger.error(f'Ошибка обработки файла {file.name}: {err}')
                     err_log.error(err, exc_info=True)
+            logger.debug('----')
+            logger.debug(f'Общее время: {time.perf_counter() - global_start}')
+            logger.debug('----')
             time.sleep(0.1)
 
         except Exception as err:
