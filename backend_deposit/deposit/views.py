@@ -1,21 +1,17 @@
-import json
-import logging
-import re
-from io import BytesIO
 
-import cv2
-import numpy as np
+import logging
+
 from django.http import HttpResponse
 from django.shortcuts import render
 
-# Create your views here.
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
-from rest_framework.response import Response
+
 
 from backend_deposit.settings import LOGCONFIG
-from deposit.func import img_path_to_str, response_m10, response_m10_short
+from deposit.func import img_path_to_str
 from deposit.models import BadScreen, Incoming
 from deposit.screen_response import screen_text_to_pay
 from deposit.serializers import IncomingSerializer

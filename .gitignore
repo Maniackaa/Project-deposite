@@ -165,5 +165,5 @@ cython_debug/
 **/migrations/**
 !**/migrations
 !**/migrations/__init__.py
-backend_deposit/media/*.*
+/backend_deposit/media
 ftp/screenshots/*.*
