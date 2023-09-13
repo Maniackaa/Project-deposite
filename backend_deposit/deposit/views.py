@@ -12,7 +12,7 @@ from rest_framework.request import Request
 
 from backend_deposit.settings import LOGCONFIG
 from deposit.func import img_path_to_str
-from deposit.models import BadScreen, Incoming
+from deposit.models import BadScreen
 from deposit.screen_response import screen_text_to_pay
 from deposit.serializers import IncomingSerializer
 
