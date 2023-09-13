@@ -17,12 +17,14 @@ class User(AbstractUser):
     first_name = models.CharField(
         verbose_name="Имя",
         max_length=30,
-        null=True
+        null=True,
+        blank=True
     )
     last_name = models.CharField(
         verbose_name="Фамилия",
         max_length=150,
-        null=True
+        null=True,
+        blank=True
     )
     email = models.EmailField(
         verbose_name="Email-адрес",
@@ -63,10 +65,14 @@ class Profile(models.Model):
     first_name = models.CharField(
         verbose_name="Имя",
         max_length=30,
+        null=True,
+        blank=True
     )
     last_name = models.CharField(
         verbose_name="Фамилия",
         max_length=150,
+        null=True,
+        blank=True
     )
     email = models.EmailField(
         verbose_name="Email-адрес",
