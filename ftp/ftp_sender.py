@@ -25,7 +25,7 @@ def main():
                     size = file.lstat().st_size
 
                     if size > 0:
-                        logger.debug(f'Отправляем {file.name, size}')
+                        logger.debug(f'Отправляем {file.name, size, bool(size>0)}')
                         with open(file, "rb") as binary:
                             screen = {'image': binary}
                             response = requests.post(ENDPOINT, data={'name': file.name, 'WORKER': WORKER}, files=screen, timeout=10)
