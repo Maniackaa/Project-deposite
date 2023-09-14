@@ -4,6 +4,8 @@ import time
 
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.utils.http import urlencode
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -21,24 +23,22 @@ logger = logging.getLogger(__name__)
 logging.config.dictConfig(LOGCONFIG)
 
 
-# def index(request):
-#     template = 'deposit/index.html'
-#     start = time.perf_counter()
-#     x=4
-#     for i in range(1000000):
-#         x = x * 2
-#     context = {'hello': f'Привет!\n {time.perf_counter() - start}'}
-#
-#
-#     return render(request, template, context)
-
-def index(request):
+def index(request, *args, **kwargs):
     form = DepositForm(request.POST or None, files=request.FILES or None, initial={'phone': '+994'})
     if form.is_valid():
-        form.save()
-        return redirect('deposit:index')
+        form.save(commit=False)
+        return redirect('deposit:deposit_confirm',
+                        phone=form.data.get('phone'),
+                        pay=form.data.get('pay_sum'))
     template = 'deposit/index.html'
     context = {'hello': f'Привет!\n', 'form': form}
+    return render(request, template, context)
+
+
+def deposit_confirm(request, phone=None, pay=None):
+    print(phone, pay)
+    template = 'deposit/deposit_confirm.html'
+    context = {'hello': f'Подтвердите ваши данные:', 'phone': phone, 'pay': pay}
     return render(request, template, context)
 
 
