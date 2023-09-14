@@ -36,9 +36,11 @@ def index(request):
 @api_view(['POST'])
 def screen(request: Request):
     logger.debug(f'Запрос: {request}')
+    logger.info(request._request.headers)
+    logger.info(request._request.get_host())
     image = request.data.get('image')
-    file_bytes = image.file.read()
-    if file_bytes:
+    if image:
+        file_bytes = image.file.read()
         logger.debug(f'file_bytes: {file_bytes[:10]}')
         text = img_path_to_str(file_bytes)
         pay = screen_text_to_pay(text)
