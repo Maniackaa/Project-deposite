@@ -14,6 +14,9 @@ class User(AbstractUser):
         (STAFF, "Персонал"),
     )
 
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = []
+
     first_name = models.CharField(
         verbose_name="Имя",
         max_length=30,
@@ -28,6 +31,8 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         verbose_name="Email-адрес",
+        null=True,
+        blank=True
     )
 
     role = models.CharField(
@@ -42,20 +47,8 @@ class User(AbstractUser):
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
-    @property
-    def get_full_name(self):
-        full_name = self.username
-        if self.first_name and self.last_name:
-            full_name = f"{self.first_name} {self.last_name}"
-        return full_name
-
-    @property
-    def is_user(self):
-        return self.role == self.USER
-
-    @property
-    def is_admin(self):
-        return self.role == self.ADMIN or self.is_superuser or self.is_staff
+    is_superuser = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
 
 
 class Profile(models.Model):

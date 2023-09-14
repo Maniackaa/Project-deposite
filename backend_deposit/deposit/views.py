@@ -1,5 +1,6 @@
 
 import logging
+import time
 
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -22,7 +23,13 @@ logging.config.dictConfig(LOGCONFIG)
 
 def index(request):
     template = 'deposit/index.html'
-    context = {'hello': 'Привет'}
+    start = time.perf_counter()
+    x=4
+    for i in range(1000000):
+        x = x * 2
+    context = {'hello': f'Привет!\n {time.perf_counter() - start}'}
+
+
     return render(request, template, context)
 
 

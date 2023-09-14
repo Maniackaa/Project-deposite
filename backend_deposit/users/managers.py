@@ -20,6 +20,7 @@ class UserManager(DefaultUserManager):
         username = GlobalUserModel.normalize_username(username)
         user = self.model(username=username, email=email, **extra_fields)
         user.password = make_password(password)
+
         user.save(using=self._db)
 
         from users.models import Profile
