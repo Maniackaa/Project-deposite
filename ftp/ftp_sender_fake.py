@@ -35,7 +35,7 @@ def main():
                             logger.debug(f'Время отправки: {time.perf_counter() - start}')
 
                         if response.status_code in [200, 201]:
-                            file.unlink()
+                            # file.unlink()
                             logger.debug(f'Скрин удален')
                         elif response.status_code in [502]:
                             time.sleep(5)

@@ -19,7 +19,7 @@ def main():
             ftp.cwd(ftp_conf.ftp.SCREEN_FOLDER)
             data = ftp.nlst()
             logger.debug(f'Количество скринов: {len(data)}')
-            if data:
+            if data and len(data) > 1:
                 file = data[0]
                 logger.debug(f'Скачиваем файл {file}')
                 with open(BASE_DIR / 'screenshots' / file, 'wb') as local_file:

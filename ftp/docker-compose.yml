@@ -21,3 +21,33 @@ services:
       - ./logs/ftp_sender:/app/logs
       - ./screenshots:/app/screenshots
     restart: always
+
+  sender1:
+    container_name: ftp_sender1
+    build: .
+    env_file: .env
+    command: python3 ftp_sender_fake.py
+    volumes:
+      - ./logs/ftp_sender:/app/logs
+      - ./screenshots:/app/screenshots
+    restart: always
+
+  sender2:
+    container_name: ftp_sender2
+    build: .
+    env_file: .env
+    command: python3 ftp_sender_fake2.py
+    volumes:
+      - ./logs/ftp_sender:/app/logs
+      - ./screenshots:/app/screenshots
+    restart: always
+
+  sender3:
+    container_name: ftp_sender3
+    build: .
+    env_file: .env
+    command: python3 ftp_sender_fake2.py
+    volumes:
+      - ./logs/ftp_sender:/app/logs
+      - ./screenshots:/app/screenshots
+    restart: always
