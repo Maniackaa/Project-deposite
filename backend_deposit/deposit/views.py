@@ -36,6 +36,8 @@ def index(request):
 @api_view(['POST'])
 def screen(request: Request):
     logger.debug(f'Запрос: {request}')
+    logger.debug(f'{request.data}')
+    # logger.debug(f'data:, {str(request.__dict__)}')
     logger.info(request._request.headers)
     logger.info(request._request.get_host())
     image = request.data.get('image')
