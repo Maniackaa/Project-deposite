@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from deposit.models import Incoming, BadScreen
+from deposit.models import Incoming, BadScreen, Deposit
 
 
 class IncomingAdmin(admin.ModelAdmin):
@@ -14,6 +14,9 @@ class BadScreenAdmin(admin.ModelAdmin):
         'id', 'transaction', 'type', 'image'
     )
 
+class DepositAdmin(admin.ModelAdmin):
+    list_display = ('id', 'register_time', 'phone', 'pay_sum')
 
 admin.site.register(Incoming, IncomingAdmin)
 admin.site.register(BadScreen, BadScreenAdmin)
+admin.site.register(Deposit, DepositAdmin)

@@ -3,8 +3,7 @@ import logging
 import time
 
 from django.http import HttpResponse
-from django.shortcuts import render
-
+from django.shortcuts import render, redirect
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -12,6 +11,7 @@ from rest_framework.request import Request
 
 
 from backend_deposit.settings import LOGCONFIG
+from deposit.forms import DepositForm
 from deposit.func import img_path_to_str
 from deposit.models import BadScreen, Incoming
 from deposit.screen_response import screen_text_to_pay
@@ -21,15 +21,24 @@ logger = logging.getLogger(__name__)
 logging.config.dictConfig(LOGCONFIG)
 
 
+# def index(request):
+#     template = 'deposit/index.html'
+#     start = time.perf_counter()
+#     x=4
+#     for i in range(1000000):
+#         x = x * 2
+#     context = {'hello': f'Привет!\n {time.perf_counter() - start}'}
+#
+#
+#     return render(request, template, context)
+
 def index(request):
+    form = DepositForm(request.POST or None, files=request.FILES or None, initial={'phone': '+994'})
+    if form.is_valid():
+        form.save()
+        return redirect('deposit:index')
     template = 'deposit/index.html'
-    start = time.perf_counter()
-    x=4
-    for i in range(1000000):
-        x = x * 2
-    context = {'hello': f'Привет!\n {time.perf_counter() - start}'}
-
-
+    context = {'hello': f'Привет!\n', 'form': form}
     return render(request, template, context)
 
 

@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.dispatch import receiver
 
@@ -26,6 +27,14 @@ class BadScreen(models.Model):
     worker = models.CharField(max_length=50, null=True)
     transaction = models.IntegerField('Транзакция', null=True, unique=True, blank=True)
     type = models.CharField(max_length=20, default='unknown')
+
+
+class Deposit(models.Model):
+    register_time = models.DateTimeField('Время добавления в базу', auto_now=True)
+    phone = models.CharField('Телефон отправителя')
+    pay_sum = models.IntegerField('Сумма платежа', validators=[MinValueValidator(5)])
+
+
 
 
 @receiver(post_delete, sender=BadScreen)
