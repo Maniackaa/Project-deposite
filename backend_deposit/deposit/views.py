@@ -37,6 +37,7 @@ def index(request):
 def screen(request: Request):
     image = request.data.get('image')
     file_bytes = image.file.read()
+    logger.debug(f'file_bytes: {file_bytes[:10]}')
     text = img_path_to_str(file_bytes)
     pay = screen_text_to_pay(text)
     worker = request.data.get('WORKER')
