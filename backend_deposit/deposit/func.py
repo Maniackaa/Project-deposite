@@ -5,10 +5,8 @@ import cv2
 import numpy as np
 import pytesseract
 from django.conf import settings
-LOGCONFIG = settings.LOGCONFIG
 TZ = settings.TZ
 logger = logging.getLogger(__name__)
-logging.config.dictConfig(LOGCONFIG)
 
 
 def get_unrecognized_field_error_text(response_fields, result):
@@ -45,13 +43,11 @@ def response_operations(fields: list[str], groups: tuple[str], response_fields, 
 
 def img_path_to_str(file_bytes):
     try:
-        logger.debug(f'Распознаем байты: {file_bytes[:100]}')
         nparr = np.frombuffer(file_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.COLOR_RGB2GRAY)
         _, binary = cv2.threshold(img, 215, 255, cv2.THRESH_BINARY)
         string = pytesseract.image_to_string(binary, lang='rus')
         string = string.replace('\n', ' ')
-        logger.debug(f'Распознали')
         return string
     except Exception as err:
         logger.error(f'Ошибка в cv2 {err}')
@@ -76,7 +72,7 @@ def response_m10(fields, groups) -> dict[str, str | float]:
     :param groups: ('25.08.2023 01:07', '+994 51 927 05 68', '+994 70 *** ** 27', '55555150', '5.00 м', 'Успешно ')
     :return: dict[str, str | float]
     """
-    logger.debug('Преобразование текста m10')
+    logger.debug('Преобразование текста m10 в pay')
     response_fields = {
         'response_date':    {'pos': 0, 'func': date_m10_response},
         'recipient':        {'pos': 1},

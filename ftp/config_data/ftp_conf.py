@@ -28,7 +28,7 @@ LOGGING_CONFIG = {
         'rotating_file_handler': {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': f'{BASE_DIR / "logs" / "bot"}.log',
-            'backupCount': 2,
+            'backupCount': 10,
             'maxBytes': 10 * 1024 * 1024,
             'mode': 'a',
             'encoding': 'UTF-8',
@@ -59,34 +59,47 @@ LOGGING_CONFIG = {
 }
 
 
+# @dataclass
+# class Ftp:
+#     SCREEN_FOLDER: str
+#     FTP_HOST: str
+#     FTP_PORT: int
+#     FTP_USER: str
+#     FTP_PASSWD: str
+#     FTP_TIMEOUT: float
+#     WORKER: str
+#     ENDPOINT: str
+
+
 @dataclass
-class Ftp:
+class ADB:
     SCREEN_FOLDER: str
-    FTP_HOST: str
-    FTP_PORT: int
-    FTP_USER: str
-    FTP_PASSWD: str
-    FTP_TIMEOUT: float
     WORKER: str
     ENDPOINT: str
 
 
 @dataclass
 class Config:
-    ftp: Ftp
+    # ftp: Ftp
+    adb: ADB
 
 
 def load_config(path=None) -> Config:
-    return Config(ftp=Ftp(SCREEN_FOLDER=os.getenv('SCREEN_FOLDER'),
-                          FTP_HOST=os.getenv('FTP_HOST'),
-                          FTP_PORT=int(os.getenv('FTP_PORT')),
-                          FTP_USER=os.getenv('FTP_USER'),
-                          FTP_PASSWD=os.getenv('FTP_PASSWD'),
-                          FTP_TIMEOUT=float(os.getenv('FTP_TIMEOUT')),
-                          WORKER=os.getenv('WORKER'),
-                          ENDPOINT=os.getenv('ENDPOINT'),
-                          ),
-                  )
+    return Config(
+        # ftp=Ftp(SCREEN_FOLDER=os.getenv('SCREEN_FOLDER'),
+        #                   FTP_HOST=os.getenv('FTP_HOST'),
+        #                   FTP_PORT=int(os.getenv('FTP_PORT')),
+        #                   FTP_USER=os.getenv('FTP_USER'),
+        #                   FTP_PASSWD=os.getenv('FTP_PASSWD'),
+        #                   FTP_TIMEOUT=float(os.getenv('FTP_TIMEOUT')),
+        #                   WORKER=os.getenv('WORKER'),
+        #                   ENDPOINT=os.getenv('ENDPOINT'),
+        #                   ),
+        adb=ADB(SCREEN_FOLDER=os.getenv('SCREEN_FOLDER'),
+                WORKER=os.getenv('WORKER'),
+                ENDPOINT=os.getenv('ENDPOINT'),
+                ),
+    )
 
 
 load_dotenv()

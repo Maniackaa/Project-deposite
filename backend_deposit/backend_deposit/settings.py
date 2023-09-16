@@ -148,33 +148,47 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
-LOGCONFIG = {
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'console': {
-            'format': '%(name)-12s %(levelname)-8s %(message)s'
+        'default_formatter': {
+            # 'format': "%(asctime)s - %(levelname)s - %(funcName)s: %(lineno)d - %(message)s"
+            'format': '%(asctime)s %(levelname)s %(module)s \n%(message)s\n',
         },
-        'file': {
-            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-        }
     },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'console'
-        },
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'formatter': 'file',
-            'filename': 'debug.log'
-        }
+            'filename': 'logs/django.log',
+            'formatter': 'default_formatter',
+
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'default_formatter',
+        },
+        'rotating_file_handler': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/rotate.log',
+            'backupCount': 10,
+            'maxBytes': 10 * 1024 * 1024,
+            'mode': 'a',
+            'encoding': 'UTF-8',
+            'formatter': 'default_formatter',
+        },
     },
     'loggers': {
-        '': {
+        'deposit': {
+            'handlers': ['console', 'file', 'rotating_file_handler'],
             'level': 'DEBUG',
-            'handlers': ['console', 'file']
-        }
+            'propagate': True
+        },
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        },
     }
 }

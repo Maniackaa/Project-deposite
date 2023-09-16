@@ -2,15 +2,13 @@
 {% block title %}Оплата{% endblock %}
 {% block content %}
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-      <div class="col-md-8 p-5">
+      <div class="col-md-8">
         <div class="card">
           <div class="card-header">
             {{ hello }}
             <div class="card-body">
 
-                    <form method="post" enctype="multipart/form-data" action="{% url 'deposit:index'  %}">
+                    <form method="post" enctype="multipart/form-data" action="{% url 'deposit:deposit_confirm' %}">
                         {% csrf_token %}
                         {% include 'includes/form_fields.html' %}
                         <div class="d-flex justify-content-end">
@@ -23,7 +21,5 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
 {% endblock %}
 

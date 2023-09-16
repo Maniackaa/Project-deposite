@@ -10,8 +10,8 @@ path = BASE_DIR / 'screenshots'
 
 logger, err_log, *other = get_my_loggers()
 
-ENDPOINT = ftp_conf.ftp.ENDPOINT
-WORKER = ftp_conf.ftp.WORKER
+ENDPOINT = ftp_conf.adb.ENDPOINT
+WORKER = ftp_conf.adb.WORKER
 
 
 def main():
@@ -19,6 +19,7 @@ def main():
         try:
             global_start = time.perf_counter()
             files = list(path.glob('*.jpg'))
+            logger.debug(f'{files}')
             for file in files:
                 try:
                     start = time.perf_counter()
@@ -28,7 +29,7 @@ def main():
                         logger.debug(f'Отправляем {file.name, size, bool(size>0)}')
                         with open(file, "rb") as binary:
                             screen = {'image': binary}
-                            response = requests.post(ENDPOINT, data={'name': file.name, 'WORKER': WORKER}, files=screen, timeout=10)
+                            response = requests.post(ENDPOINT, data={'name': file.name, 'worker': WORKER}, files=screen, timeout=10)
                             reason = response.reason
                             logger.debug(f'reason: {reason}')
                             logger.debug(f'{response, response.status_code}')
