@@ -3,7 +3,7 @@
 {% block title %}Статус депозита{% endblock %}
 {% block content %}
 
-      <div class="col-md-8">
+      <div class="col-md-3">
         <div class="card">
           <div class="card-header">
             <div class="card-body">
@@ -11,16 +11,21 @@
                 Ваш депозит № {{deposit.id}}:<br>
                 <b>Сумма:</b> {{deposit.pay_sum}} AZN<br>
                 <b>Статус</b>: {{deposit.status}}<br>
-                <b>Чек:</b><br>
+                <b>Чек: </b>
 
               {% else %}
                 Депозит с таким идентификатором не найден
               {% endif %}
+              {% if deposit.pay_screen %}
 
+            <img class="img-thumbnail"  src="/media/{{deposit.pay_screen}}" width="200" height="400">
+              {% else %}
+              Отсутствует
+              {% endif %}
 
 
             </div>
-            <img class="img-thumbnail"  src="/media/{{deposit.pay_screen}}" width="200" height="400">
+
         </div>
       </div>
     </div>
