@@ -120,9 +120,16 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./certbot/www:/var/www/certbot/:ro
       - static:/app/static
       - media:/app/media
+
+  certbot:
+    image: certbot/cerbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
