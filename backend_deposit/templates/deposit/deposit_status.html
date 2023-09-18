@@ -10,6 +10,9 @@
                 Ваш депозит № {{deposit.id}}:<br>
                 <b>Сумма:</b> {{deposit.pay_sum}} AZN<br>
                 <b>Статус</b>: {{deposit.status}}
+                <b>Чек:</b>: <br>
+                <img class="card-img my-2" src="/media/{{deposit.pay_screen}}">
+
               {% else %}
                 Депозит с таким идентификатором не найден
               {% endif %}

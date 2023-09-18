@@ -21,7 +21,7 @@ class Incoming(models.Model):
 
 class BadScreen(models.Model):
     name = models.CharField(unique=False, max_length=200)
-    image = models.ImageField(upload_to='screens/',
+    image = models.ImageField(upload_to='bad_screens/',
                               verbose_name='скрин')
     incoming_time = models.DateTimeField('Время добавления в базу', auto_now=True)
     worker = models.CharField(max_length=50, null=True)

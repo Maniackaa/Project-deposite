@@ -1,4 +1,7 @@
+from django.conf.urls.static import static
 from django.urls import path, include
+
+from backend_deposit import settings
 from . import views
 
 app_name = 'deposit'
@@ -14,3 +17,5 @@ urlpatterns = [
     path('screen/', views.screen, name='screen'),
 ]
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

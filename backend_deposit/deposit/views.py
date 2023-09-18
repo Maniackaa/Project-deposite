@@ -78,9 +78,7 @@ def deposit_created(request):
         return render(request, template_name=template, context=context)
     if request.method == 'POST':
         screen = request._files.get('pay_screen')
-        print(screen, type(screen))
         form = DepositImageForm(request.POST, files=request.FILES or None, initial={'pay_screen': screen})
-        print(form)
         uid = form.get_context()['hidden_fields'][0].value()
         template = 'deposit/deposit_created.html'
         screen = form.files.get('pay_screen')
