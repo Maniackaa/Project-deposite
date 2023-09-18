@@ -94,8 +94,9 @@ async def main():
             await asyncio.sleep(1)
 
         except Exception as err:
+            logger1.error(err)
             await asyncio.sleep(1)
-            print(err)
+
 
 
 if __name__ == '__main__':

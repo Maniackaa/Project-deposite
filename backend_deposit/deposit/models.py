@@ -30,12 +30,14 @@ class BadScreen(models.Model):
 
 
 class Deposit(models.Model):
-    uid = models.CharField(max_length=36, db_index=True, unique=True, null=True)
+    uid = models.CharField(max_length=36, db_index=True, unique=True, null=True, blank=True)
     register_time = models.DateTimeField('Время добавления в базу', auto_now=True)
     phone = models.CharField('Телефон отправителя')
     pay_sum = models.IntegerField('Сумма платежа', validators=[MinValueValidator(5)])
-    input_transaction = models.IntegerField('Номер транзакции из чека', null=True)
+    input_transaction = models.IntegerField('Номер транзакции из чека', null=True, blank=True)
     status = models.CharField('Статус депозита', default='pending')
+    pay_screen = models.ImageField(upload_to='pay_screens/',
+                                   verbose_name='Чек об оплате', null=True, blank=True)
 
 
 @receiver(post_delete, sender=BadScreen)

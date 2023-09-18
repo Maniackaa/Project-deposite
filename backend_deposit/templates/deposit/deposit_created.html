@@ -5,11 +5,42 @@
       <div class="col-md-8">
         <div class="card">
           <div class="card-header">
-            {{ hello }}
+            Депозит создан
+              {% csrf_token %}
             <div class="card-body">
-                Депозит создан
-
+                Ваш уникальный идентификатор:<br>
+                {{uid}}<br><br>
+                Вы можете отследить статус вашего платежа здесь:<br>
+                <a href="{% url 'deposit:status' uid %}">Статус платежа</a>
             </div>
+
+
+              <form method="post" enctype="multipart/form-data" action="{% url 'deposit:created' %}">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            {{ field }}
+
+
+                        {% endfor %}
+                <br>
+                  <div>
+                  {% if pay_screen %}
+                  <b>Прикреплен чек:</b> {{ pay_screen }}
+                  {% endif %}
+                   </div>
+              <div class="d-flex justify-content-around">
+
+                  {% if pay_screen %}
+                  <button type="submit" class="btn btn-primary">
+                       Прикрепить другой чек
+                  </button>
+                  {% else %}
+                  <button type="submit" class="btn btn-primary">
+                       Прикрепить чек
+                  </button>
+                  {% endif %}
+              </div>
+
         </div>
       </div>
     </div>

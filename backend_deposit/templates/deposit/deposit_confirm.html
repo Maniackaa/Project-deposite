@@ -6,16 +6,21 @@
           <div class="card-header">
             {{ hello }}
             <div class="card-body">
-                <p><b>Телефон:</b> {{ phone }}</p>
-                <p><b>Сумма:</b> {{ pay }} AZN</p>
+                <p><b>Подтвердите введенные данные:</p>
+
             </div>
+                {% if form.errors %}
+                    Есть ошибки
+                {% endif %}
+               <form method="get" enctype="multipart/form-data" action="{% url 'deposit:created' %}">
+                        {% csrf_token %}
+                        {% include 'includes/form_fields.html' %}
               <div class="d-flex justify-content-around">
-                  <a href="{% url 'deposit:index'  %}"><button class="btn btn-warning">Отменить</button></a>
-                  <button type="submit" class="btn btn-success">
-                    Подтвердить
+                  <a href="{% url 'deposit:index'  %}">Отменить</a>
+                  <button type="submit" class="btn btn-primary">
+                       Далее
                   </button>
               </div>
-              {{form}}
         </div>
       </div>
     </div>

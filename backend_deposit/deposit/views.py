@@ -14,9 +14,9 @@ from rest_framework.request import Request
 
 
 
-from deposit.forms import DepositForm
+from deposit.forms import DepositForm, DepositImageForm
 from deposit.func import img_path_to_str
-from deposit.models import BadScreen, Incoming
+from deposit.models import BadScreen, Incoming, Deposit
 from deposit.screen_response import screen_text_to_pay
 from deposit.serializers import IncomingSerializer
 
@@ -25,40 +25,79 @@ logger = logging.getLogger(__name__)
 
 
 def index(request, *args, **kwargs):
-    form = DepositForm(request.POST or None, files=request.FILES or None, initial={'phone': '+994'})
-    if form.is_valid():
-        # form.save(commit=False)
-        return redirect('deposit:deposit_confirm',
-                        form=form,
-                        phone=form.data.get('phone'),
-                        pay=form.data.get('pay_sum'))
+    logger.debug(f'index {request}')
+    form = DepositForm(request.POST or None,
+                       files=request.FILES or None, initial={'phone': '+994', 'uid': uuid.uuid4()})
+    if request.method == 'POST':
+        logger.debug('index POST')
+        if form.is_valid():
+            form.save(commit=False)
+            return redirect('deposit:deposit_confirm',
+                            form=form,
+                            )
+        else:
+            logger.debug('form.invalid')
+            raise ValueError()
     template = 'deposit/index.html'
     context = {'hello': f'Привет!\n', 'form': form}
     return render(request, template, context)
 
 
-# def deposit_confirm(request, phone=None, pay=None, *args, **kwargs):
-#     print(args, kwargs)
-#     print(phone, pay)
-#     template = 'deposit/deposit_confirm.html'
-#     context = {'hello': f'Подтвердите ваши данные:', 'phone': phone, 'pay': pay}
-#     return render(request, template, context)
-
 def deposit_confirm(request):
-    form = DepositForm(request.POST, files=request.FILES or None)
-    if form.is_valid():
-        uid = uuid.uuid4()
+    try:
+        logger.debug(f'deposit_confirm {request}')
+        form = DepositForm(request.POST or request.GET or None, files=request.FILES or None)
+        template = 'deposit/deposit_confirm.html'
+        if request.method == 'POST':
+            if form.is_valid():
+                template = 'deposit/deposit_confirm.html'
+                context = {'form': form}
+                return render(request, template_name=template, context=context)
 
-    template = 'deposit/deposit_confirm.html'
-    context = {'form': form}
-    return render(request, template, context)
+        logger.debug(f'GET ')
+        context = {'form': form}
+        return render(request, template_name=template, context=context)
+    except Exception as err:
+        logger.error('ошибка')
+        raise err
 
 
 def deposit_created(request):
+    logger.debug(f'deposit_created: {request}')
+    if request.method == 'GET':
+        logger.debug(f'deposit_created {request}')
+        form = DepositImageForm(request.GET, files=request.FILES or None)
+        print(form)
+        uid = form.get_context()['hidden_fields'][0].value()
+        if form.is_valid():
+            form.save()
+        else:
+            pass
+        template = 'deposit/deposit_created.html'
+        context = {'uid': uid, 'form': form}
+        return render(request, template_name=template, context=context)
+    if request.method == 'POST':
+        screen = request._files.get('pay_screen')
+        print(screen, type(screen))
+        form = DepositImageForm(request.POST, files=request.FILES or None, initial={'pay_screen': screen})
+        print(form)
+        uid = form.get_context()['hidden_fields'][0].value()
+        template = 'deposit/deposit_created.html'
+        screen = form.files.get('pay_screen')
+        if screen:
+            deposit = Deposit.objects.get(uid=uid)
+            deposit.pay_screen = screen
+            deposit.save()
+        context = {'uid': uid, 'form': form, 'pay_screen': screen}
+        return render(request, template_name=template, context=context)
 
-    context = {'hello': f'Депозит создан'}
-    template = 'deposit/deposit_created.html'
-    return render(request, template, context)
+
+def deposit_status(request, uid):
+    logger.debug(f'deposit_status {request}')
+    template = 'deposit/deposit_status.html'
+    deposite = Deposit.objects.filter(uid=uid).first()
+    context = {'deposit': deposite}
+    return render(request, template_name=template, context=context)
 
 
 
@@ -106,7 +145,8 @@ def screen(request: Request):
                 is_duplicate = BadScreen.objects.filter(transaction=transaction).exists()
                 if not is_duplicate:
                     logger.debug('Сохраняем в BadScreen')
-                    BadScreen.objects.create(name=name, worker=worker, image=image, transaction=transaction, type=sms_type)
+                    BadScreen.objects.create(name=name, worker=worker, image=image,
+                                             transaction=transaction, type=sms_type)
                     return HttpResponse(status=status.HTTP_200_OK,
                                         reason='New BadScreen',
                                         charset='utf-8')
@@ -143,7 +183,8 @@ def screen(request: Request):
                 # Обработа неизвестных ошибок при сохранении
                 logger.warning('Неизестная ошибка')
                 if not BadScreen.objects.filter(transaction=transaction).exists():
-                    BadScreen.objects.create(name=name, worker=worker, image=image, transaction=transaction, type=sms_type)
+                    BadScreen.objects.create(name=name, worker=worker, image=image,
+                                             transaction=transaction, type=sms_type)
                     return HttpResponse(status=status.HTTP_200_OK,
                                         reason='invalid serializer. Add to trash',
                                         charset='utf-8')
@@ -160,3 +201,6 @@ def screen(request: Request):
 
     except Exception as err:
         logger.error(err, exc_info=True)
+        return HttpResponse(status=status.HTTP_400_BAD_REQUEST,
+                            reason=f'{err}',
+                            charset='utf-8')

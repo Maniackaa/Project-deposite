@@ -8,7 +8,7 @@
             {{ hello }}
             <div class="card-body">
 
-                    <form method="post" enctype="multipart/form-data" action="{% url 'deposit:deposit_confirm' %}">
+                    <form method="post" enctype="multipart/form-data" action="{% url 'deposit:confirm' %}">
                         {% csrf_token %}
                         {% include 'includes/form_fields.html' %}
                         <div class="d-flex justify-content-end">

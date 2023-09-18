@@ -17,10 +17,13 @@
       </div>
     {% endfor %}
     <label for="{{ field.id_for_label }}">
+      {{field.hidden}}
+      {% if field.name != 'uid'%}
       {{ field.label }}
         {% if field.field.required %}
           <span class="required text-danger">*</span>
         {% endif %}
+      {% endif %}
     </label>
     {{ field }}
     <div>
