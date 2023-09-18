@@ -67,7 +67,6 @@ def deposit_created(request):
     if request.method == 'GET':
         logger.debug(f'deposit_created {request}')
         form = DepositImageForm(request.GET, files=request.FILES or None)
-        print(form)
         uid = form.get_context()['hidden_fields'][0].value()
         if form.is_valid():
             form.save()
@@ -83,10 +82,12 @@ def deposit_created(request):
         template = 'deposit/deposit_created.html'
         screen = form.files.get('pay_screen')
         if screen:
+            print(screen, screen.__dict__)
             deposit = Deposit.objects.get(uid=uid)
             deposit.pay_screen = screen
             deposit.save()
-        context = {'uid': uid, 'form': form, 'pay_screen': screen}
+            print(form)
+        context = {'uid': uid, 'form': form, 'deposit': deposit, 'pay_screen': screen}
         return render(request, template_name=template, context=context)
 
 
