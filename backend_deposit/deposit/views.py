@@ -106,6 +106,17 @@ def screen(request: Request):
     """
     logger.debug(f'{request.data} {request._request.get_host()}')
     if request.method == 'GET':
+        META = request.META
+        host = request.META["HTTP_HOST"]  # получаем адрес сервера
+        user_agent = request.META["HTTP_USER_AGENT"]  # получаем данные бразера
+        path = request.path
+        logger.debug(host)
+        logger.debug(user_agent)
+        logger.debug(path)
+        logger.debug(META)
+
+
+
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST,
                             reason='bad_method',
                             charset='utf-8')
