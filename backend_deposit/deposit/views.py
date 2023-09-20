@@ -81,6 +81,7 @@ def deposit_created(request):
         uid = form.get_context()['hidden_fields'][0].value()
         template = 'deposit/deposit_created.html'
         screen = form.files.get('pay_screen')
+        deposit = None
         if screen:
             print(screen, screen.__dict__)
             deposit = Deposit.objects.get(uid=uid)
@@ -99,32 +100,23 @@ def deposit_status(request, uid):
     return render(request, template_name=template, context=context)
 
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 def screen(request: Request):
     """
     Прием сриншота
     """
-    logger.debug(f'{request.data} {request._request.get_host()}')
-    if request.method == 'GET':
-        META = request.META
-        host = request.META["HTTP_HOST"]  # получаем адрес сервера
-        user_agent = request.META["HTTP_USER_AGENT"]  # получаем данные бразера
-        path = request.path
-        logger.debug(host)
-        logger.debug(user_agent)
-        logger.debug(path)
-        logger.debug(META)
-
-
-
-        return HttpResponse(status=status.HTTP_400_BAD_REQUEST,
-                            reason='bad_method',
-                            charset='utf-8')
+    host = request.META["HTTP_HOST"]  # получаем адрес сервера
+    user_agent = request.META["HTTP_USER_AGENT"]  # получаем данные бразера
+    forwarded = request.META["HTTP_X_FORWARDED_FOR"]
+    path = request.path
+    logger.debug(f'{request.data}')
+    logger.debug(host)
+    logger.debug(user_agent)
+    logger.debug(path)
+    logger.debug(forwarded)
 
     try:
         # params_example {'name': '/DCIM/Screen.jpg', 'worker': 'Station 1}
-
-
         image = request.data.get('image')
         worker = request.data.get('worker')
         name = request.data.get('name')
