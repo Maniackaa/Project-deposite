@@ -203,6 +203,7 @@ def screen(request: Request):
     # Ошибка при обработке
     except Exception as err:
         logger.error(err, exc_info=True)
+        logger.debug(f'{request.data} {request._request.get_host()}')
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST,
                             reason=f'{err}',
                             charset='utf-8')
