@@ -167,3 +167,5 @@ cython_debug/
 !**/migrations/__init__.py
 /backend_deposit/media
 ftp/screenshots/*.*
+
+certbot/
