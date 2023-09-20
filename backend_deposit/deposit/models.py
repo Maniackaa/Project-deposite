@@ -1,8 +1,16 @@
+import datetime
+import logging
+import re
+
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.dispatch import receiver
 
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, post_save
+
+from backend_deposit.settings import TZ
+
+logger = logging.getLogger(__name__)
 
 
 class Incoming(models.Model):
@@ -17,6 +25,10 @@ class Incoming(models.Model):
     worker = models.CharField(max_length=50, null=True)
     image = models.ImageField(upload_to='screens/',
                               verbose_name='скрин', null=True, blank=True)
+
+    def __str__(self):
+        string = f'{self.id} Отправитель: {self.sender}, Транзакция: {self.transaction}, pay: {self.pay}'
+        return string
 
 
 class BadScreen(models.Model):
@@ -38,10 +50,15 @@ class Deposit(models.Model):
     status = models.CharField('Статус депозита', default='pending')
     pay_screen = models.ImageField(upload_to='pay_screens/',
                                    verbose_name='Чек об оплате', null=True, blank=True)
+    confirmed_incoming = models.ForeignKey(Incoming, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        string = f'{self.id}. phone: {self.phone}, input_transaction: {self.input_transaction}, pay: {self.pay_sum}'
+        return string
 
 
 @receiver(post_delete, sender=BadScreen)
-def screen_image_delete(sender, instance, **kwargs):
+def bad_screen_image_delete(sender, instance, **kwargs):
     if instance.image.name:
         instance.image.delete(False)
 
@@ -50,3 +67,42 @@ def screen_image_delete(sender, instance, **kwargs):
 def screen_image_delete(sender, instance, **kwargs):
     if instance.image.name:
         instance.image.delete(False)
+
+
+@receiver(post_save, sender=Incoming)
+def after_save_incoming(sender, instance: Incoming, **kwargs):
+    try:
+        logger.debug(f'Действие после сохранения корректного скрина: {instance}')
+        pay = instance.pay
+        sender = instance.sender  # +994 70 *** ** 27
+        if sender:
+            cleaned_sender = sender.replace(' ', '')
+            cleaned_sender = re.sub(r'[*]+', '*', cleaned_sender)
+            logger.debug(f'cleaned sender: {cleaned_sender}')
+            sender = cleaned_sender #  +99470*27
+
+        if '*' in sender:
+            splitted = sender.split('*')
+            sender_start, sender_end = splitted[0], splitted[1]
+            # найдем все депозиты с этими данными за последние 10 минут:
+            treshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
+            logger.debug(f'Ищем депозиты не позднее чем: {str(treshold)}')
+            deposits = Deposit.objects.filter(
+                status='pending',
+                pay_sum=pay,
+                phone__startswith=sender_start,
+                phone__endswith=sender_end,
+                register_time__gte=treshold
+            ).all()
+            logger.debug(f'Найденные deposits: {deposits}')
+            if deposits:
+                deposit = deposits.first()
+                logger.debug(f'Подтверждаем депозит {deposit}')
+                deposit.confirmed_incoming = instance
+                deposit.status = 'confirmed'
+                deposit.save()
+                logger.debug(f'Депозит подтвержден: {deposit}')
+
+    except Exception as err:
+        logger.error(err, exc_info=True)
+

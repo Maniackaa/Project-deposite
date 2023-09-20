@@ -100,9 +100,11 @@ def deposit_status(request, uid):
 
 
 
-
 @api_view(['POST'])
 def screen(request: Request):
+    """
+    Прием сриншота
+    """
     try:
         # params_example {'name': '/DCIM/Screen.jpg', 'worker': 'Station 1}
         logger.debug(f'{request.data} {request._request.get_host()}')
@@ -198,6 +200,7 @@ def screen(request: Request):
                                 reason='not recognize',
                                 charset='utf-8')
 
+    # Ошибка при обработке
     except Exception as err:
         logger.error(err, exc_info=True)
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST,

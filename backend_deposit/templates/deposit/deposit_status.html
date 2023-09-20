@@ -16,14 +16,12 @@
               {% else %}
                 Депозит с таким идентификатором не найден
               {% endif %}
+
               {% if deposit.pay_screen %}
-
-            <img class="img-thumbnail"  src="/media/{{deposit.pay_screen}}" width="200" height="400">
+                <img class="img-thumbnail"  src="/media/{{deposit.pay_screen}}" width="200" height="400">
               {% else %}
-              Отсутствует
+                Отсутствует
               {% endif %}
-
-
             </div>
 
         </div>

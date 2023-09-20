@@ -19,7 +19,7 @@ class DepositForm(forms.ModelForm):
                 cleaned_phone += num
         if not cleaned_phone.startswith('+994'):
             raise ValidationError('Телефон должен начинаться с +994')
-        if len(cleaned_phone) != 11:
+        if len(cleaned_phone) != 13:
             raise ValidationError('Неверное количество цифр в телефоне')
         # current_time = datetime.datetime.now(tz=TZ)
         # time_threshold = current_time - datetime.timedelta(minutes=5)
