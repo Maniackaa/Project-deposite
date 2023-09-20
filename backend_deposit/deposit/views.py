@@ -99,15 +99,20 @@ def deposit_status(request, uid):
     return render(request, template_name=template, context=context)
 
 
-
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 def screen(request: Request):
     """
     Прием сриншота
     """
+    logger.debug(f'{request.data} {request._request.get_host()}')
+    if request.method == 'GET':
+        return HttpResponse(status=status.HTTP_400_BAD_REQUEST,
+                            reason='bad_method',
+                            charset='utf-8')
+
     try:
         # params_example {'name': '/DCIM/Screen.jpg', 'worker': 'Station 1}
-        logger.debug(f'{request.data} {request._request.get_host()}')
+
 
         image = request.data.get('image')
         worker = request.data.get('worker')
