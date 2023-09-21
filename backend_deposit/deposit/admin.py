@@ -14,8 +14,10 @@ class BadScreenAdmin(admin.ModelAdmin):
         'id', 'transaction', 'type', 'image'
     )
 
+
 class DepositAdmin(admin.ModelAdmin):
-    list_display = ('id', 'register_time', 'phone', 'pay_sum')
+    list_display = ('id', 'register_time', 'change_time', 'phone', 'pay_sum', 'input_transaction')
+
 
 admin.site.register(Incoming, IncomingAdmin)
 admin.site.register(BadScreen, BadScreenAdmin)

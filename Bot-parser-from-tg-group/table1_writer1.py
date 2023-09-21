@@ -14,9 +14,14 @@ logger, err_log, logger1, logger2 = get_my_loggers()
 
 
 async def write_sheets2():
-    logger1.info('Добавляем репорт')
-    rows = get_day_report_rows()
-    await write_to_table(rows, start_row=2, url=conf.tg_bot.TABLE_1, sheets_num=1)
+    try:
+        logger1.info('Добавляем репорт по суточным поступлениям')
+        rows = get_day_report_rows()
+        logger1.debug(f'rows для репорта: {rows}')
+        await write_to_table(rows, start_row=2, url=conf.tg_bot.TABLE_1, sheets_num=1)
+    except Exception as err:
+        logger1.error(err, exc_info=True)
+
 
 async def write_sheets3():
     logger1.info('Добавляем объемы по картам')
@@ -27,9 +32,10 @@ async def write_sheets3():
     logger1.debug(F'Объемы по картам: {rows}')
     await write_to_table(rows, start_row=2, url=conf.tg_bot.TABLE_1, sheets_num=2, delta_col=1)
 
+
 async def jobs():
     print('sheets2_report')
-    aioschedule.every().hour.do(write_sheets2)
+    aioschedule.every(5).minutes.do(write_sheets2)
     aioschedule.every().hour.do(write_sheets3)
     while True:
         await aioschedule.run_pending()
@@ -98,12 +104,11 @@ async def main():
             await asyncio.sleep(1)
 
 
-
 if __name__ == '__main__':
     logger1.info('Starting Table writer 1')
     try:
         # r.set('table1_trash_last_num', 0)
-        # asyncio.run(write_sheets2())
+        asyncio.run(write_sheets2())
         asyncio.run(write_sheets3())
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):

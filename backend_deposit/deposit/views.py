@@ -76,19 +76,36 @@ def deposit_created(request):
         context = {'uid': uid, 'form': form}
         return render(request, template_name=template, context=context)
     if request.method == 'POST':
-        screen = request._files.get('pay_screen')
-        form = DepositImageForm(request.POST, files=request.FILES or None, initial={'pay_screen': screen})
-        uid = form.get_context()['hidden_fields'][0].value()
+        data = request.POST
+        uid = data['uid']
+        input_transaction = data.get('input_transaction') or None
+        deposit = Deposit.objects.get(uid=uid)
+        if deposit.pay_screen:
+            old_screen_name = deposit.pay_screen.name
+        else:
+            old_screen_name = None
+
+        screen_clear = data.get('pay_screen-clear')
+
+        if screen_clear:
+            pay_screen = None
+            screen_name = None
+            deposit.pay_screen.delete(save=False)
+        else:
+            pay_screen = request.FILES.get('pay_screen') or deposit.pay_screen
+            screen_name = pay_screen.name
+
+        if pay_screen and old_screen_name != screen_name:
+            deposit.pay_screen = pay_screen
+
+        deposit.input_transaction = input_transaction
+
+        deposit.save()
+
+        form = DepositImageForm(instance=deposit)
         template = 'deposit/deposit_created.html'
-        screen = form.files.get('pay_screen')
-        deposit = None
-        if screen:
-            print(screen, screen.__dict__)
-            deposit = Deposit.objects.get(uid=uid)
-            deposit.pay_screen = screen
-            deposit.save()
-            print(form)
-        context = {'uid': uid, 'form': form, 'deposit': deposit, 'pay_screen': screen}
+
+        context = {'uid': uid, 'form': form, 'deposit': deposit, 'pay_screen': pay_screen}
         return render(request, template_name=template, context=context)
 
 

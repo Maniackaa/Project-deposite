@@ -5,7 +5,7 @@ import datetime
 from sqlalchemy import select, func, Date, Time, and_
 from sqlalchemy.exc import IntegrityError
 
-from config_data.bot_conf import get_my_loggers
+from config_data.bot_conf import get_my_loggers, tz
 from database.db import Session, Incoming, TrashIncoming
 
 logger, err_log, logger1, logger2 = get_my_loggers()
@@ -100,100 +100,94 @@ def find_new_out(last_num=0):
         raise err
 
 
-
-#
-# def get_step_results():
-#     try:
-#         session = Session()
-#
-#         def period_report(start='00:00', end='23:59:00.999999'):
-#             """
-#             Находит сумму и количество pay за период времени
-#             :param start: '00:00'
-#             :param end: '23:59:59.999999'
-#             :return: [(datetime.date(2023, 8, 26), 500.0, 1)]
-#             """
-#             step = select(func.cast(Incoming.register_date, Date),
-#                           func.sum(Incoming.pay),
-#                           func.count(Incoming.pay)).where(
-#                 and_(func.cast(Incoming.register_date, Time) >= start, func.cast(Incoming.register_date, Time) <= end)
-#             ).where(Incoming.pay > 0).group_by(
-#                 func.cast(Incoming.register_date, Date)
-#             )
-#             return step
-#
-#         with session:
-#             step1 = period_report('00:00', '07:59:00.999999')
-#             results1 = session.execute(step1).all()
-#
-#             step2 = period_report('08:00', '15:59:00.999999')
-#             results2 = session.execute(step2).all()
-#
-#             step3 = period_report('16:00', '23:59:00.999999')
-#             results3 = session.execute(step3).all()
-#
-#             all_steps = period_report()
-#             results_all = session.execute(all_steps).all()
-#
-#             dates = select(func.cast(Incoming.register_date, Date)).order_by(
-#                 func.cast(Incoming.register_date, Date)).distinct()
-#             dates_result = session.execute(dates).scalars().all()
-#
-#             rows = []
-#             for date in dates_result:
-#                 print(date)
-#                 row = [date.strftime('%d.%m.%Y'), '0 - 0', '0 - 0', '0 - 0', '0 - 0']
-#                 for num, step in enumerate([results_all, results1, results2, results3], 1):
-#                     print('---', step)
-#                     for step_day in step:
-#                         if step_day[0] == date:
-#                             day_text = f'{round(step_day[1], 2)} - {step_day[2]}'
-#                         row[num] = day_text
-#                 rows.append(row)
-#
-#             logger1.debug(f'Сменные отчеты: {rows}')
-#     except Exception as err:
-#         err_log.error('ошибка посдсчета смен', exc_info=True)
-
 def get_day_report_rows():
     logger.debug(f'Считаем сменные отчеты')
 
-    def period_report(start='00:00', end='23:59:00.999999'):
+    def bad_ids():
+        """
+        Функция аходит id которые не надо учитывать:
+        m10 с отправителем картой
+        m10 sender с полным номером телефона кроме 00 000 00 00
+        :return:
+        """
+        session = Session()
+        with session:
+            # m10 с отправителем картой
+            finded_sender_as_card = select(Incoming).where(Incoming.type.in_(['m10', 'm10_short'])).filter(
+                    Incoming.sender.regexp_match(r'\d\d\d\d \d\d.*\d\d\d\d')
+            ).distinct()
+            finded_sender_as_card = session.execute(finded_sender_as_card).scalars().all()
+            # print(finded_sender_as_card)
+
+            # m10 sender с полным номером телефона кроме 00 000 00 00
+            finded_sender_full_phone = select(Incoming).where(Incoming.type.in_(['m10', 'm10_short'])).filter(
+                Incoming.sender.regexp_match(r'\d\d\d \d\d \d\d\d \d\d \d\d')).filter(~
+                Incoming.sender.regexp_match(r'00 000 00 00')).distinct()
+            finded_sender_full_phone = session.execute(finded_sender_full_phone).scalars().all()
+            # print(finded_sender_full_phone)
+
+            finded_total_bad_sender = set()
+            finded_total_bad_ids = set()
+
+            total_bad_incomings = finded_sender_as_card + finded_sender_full_phone
+
+            for bad in total_bad_incomings:
+                finded_total_bad_sender.add(bad.sender)
+                finded_total_bad_ids.add(bad.id)
+            logger1.info(f'Не учитываются sender: {len(finded_total_bad_sender)} шт: {finded_total_bad_sender}')
+            logger1.info(f'Ид которые не учитываются: {len(finded_total_bad_ids)} шт: {finded_total_bad_ids}')
+        return [finded_total_bad_ids, finded_total_bad_sender]
+
+    def period_report(start='00:00', end='23:59:59.999999', sended_bad_ids=[]):
         """
         Находит сумму и количество pay за период времени
         :param start: '00:00'
         :param end: '23:59:59.999999'
+        :sended_bad_ids: id которые не учитываются
         :return: [(datetime.date(2023, 8, 26), 500.0, 1)]
         """
+
+        # Найдем кроме тех что выше:
         step = select(func.cast(Incoming.register_date, Date),
                       func.sum(Incoming.pay),
                       func.count(Incoming.pay)).where(
             and_(func.cast(Incoming.register_date, Time) >= start, func.cast(Incoming.register_date, Time) <= end)
-        ).where(Incoming.pay > 0).group_by(
+        ).where(Incoming.pay > 0).where(Incoming.id.not_in(sended_bad_ids)).group_by(
             func.cast(Incoming.register_date, Date)
         )
         return step
 
     try:
         session = Session()
+        not_calc_ids, bad_senders = bad_ids()
 
         with session:
-            step1 = period_report('00:00', '07:59:00.999999')
+            step1 = period_report('00:00', '07:59:59.999999', not_calc_ids)
             results1 = session.execute(step1).all()
 
-            step2 = period_report('08:00', '15:59:00.999999')
+            step2 = period_report('08:00', '15:59:59.999999', not_calc_ids)
             results2 = session.execute(step2).all()
 
-            step3 = period_report('16:00', '23:59:00.999999')
+            step3 = period_report('16:00', '23:59:59.999999', not_calc_ids)
             results3 = session.execute(step3).all()
 
-            all_steps = period_report()
+            all_steps = period_report(sended_bad_ids=not_calc_ids)
             results_all = session.execute(all_steps).all()
 
-            dates = select(func.cast(Incoming.register_date, Date)).order_by(func.cast(Incoming.register_date, Date)).distinct()
+            dates = select(func.cast(Incoming.register_date, Date)).order_by(func.cast(Incoming.register_date, Date).desc()).distinct()
             dates_result = session.execute(dates).scalars().all()
 
-            rows = []
+            str_not_calc_ids = [str(x) for x in sorted(not_calc_ids)]
+            str_not_calc_ids = ', '.join(str_not_calc_ids)
+
+            rows = [
+
+                list(bad_senders),
+                ['ID, которые пропускаются:'],
+                [str_not_calc_ids],
+                ['-'],
+                [datetime.datetime.now(tz=tz).strftime('%d.%m.%Y  %H:%M:%S'),	'За день', 'Смена 1', 'Смена 2', 'Смена 3']
+            ]
             for date in dates_result:
                 print(date)
                 row = [date.strftime('%d.%m.%Y'), '0 - 0', '0 - 0', '0 - 0', '0 - 0']
@@ -206,11 +200,11 @@ def get_day_report_rows():
                 rows.append(row)
 
             logger1.debug(f'Сменные отчеты: {rows}')
+            print(bad_senders)
             return rows
 
     except Exception as err:
         err_log.debug(f'Ошибка при чтении отчетов', exc_info=True)
-
 
 
 def get_out_report_rows():
@@ -218,7 +212,7 @@ def get_out_report_rows():
     try:
         session = Session()
 
-        def out_period_report(start='00:00', end='23:59:00.999999'):
+        def out_period_report(start='00:00', end='23:59:59.999999'):
             """
             Находит сумму и количество pay выводов за период времени
             :param start: '00:00'
@@ -236,13 +230,13 @@ def get_out_report_rows():
             return step
 
         with session:
-            step1 = out_period_report('00:00', '07:59:00.999999')
+            step1 = out_period_report('00:00', '07:59:59.999999')
             results1 = session.execute(step1).all()
 
-            step2 = out_period_report('08:00', '15:59:00.999999')
+            step2 = out_period_report('08:00', '15:59:59.999999')
             results2 = session.execute(step2).all()
 
-            step3 = out_period_report('16:00', '23:59:00.999999')
+            step3 = out_period_report('16:00', '23:59:59.999999')
             results3 = session.execute(step3).all()
 
             all_steps = out_period_report()
@@ -321,4 +315,36 @@ if __name__ == '__main__':
     # print(get_day_report_rows())
     # print(get_out_report_rows())
     # find_new_out()
-    get_card_volume_rows(['+994 70 *** ** 27'])
+    # get_card_volume_rows(['+994 70 *** ** 27'])
+
+    # session = Session()
+    # #4127 20 ** ** ** 5502
+    # with session:
+    #     # m10 с отправителем картой
+    #     sender_as_card = select(Incoming).where(Incoming.type.in_(['m10', 'm10_short'])).filter(
+    #             Incoming.sender.regexp_match(r'\d\d\d\d \d\d.*\d\d\d\d')
+    #     ).distinct()
+    #     sender_as_card = session.execute(sender_as_card).scalars().all()
+    #     # print(sender_as_card)
+    #
+    #     # m10 sender с полным номером телефона кроме 00 000 00 00
+    #     sender_full_phone = select(Incoming).where(Incoming.type.in_(['m10', 'm10_short'])).filter(
+    #         Incoming.sender.regexp_match(r'\d\d\d \d\d \d\d\d \d\d \d\d')).filter(~
+    #         Incoming.sender.regexp_match(r'00 000 00 00')).distinct()
+    #     sender_full_phone = session.execute(sender_full_phone).scalars().all()
+    #     # print(sender_full_phone)
+    #
+    #     total_bad_sender = set()
+    #     total_bad_ids = set()
+    #     total_bad = sender_as_card + sender_full_phone
+    #     # print(total_bad)
+    #     for bad in total_bad:
+    #         total_bad_sender.add(bad.sender)
+    #         total_bad_ids.add(bad.id)
+    #     logger1.info(f'Не учитываются sender: {len(total_bad_sender)} шт: {total_bad_sender}')
+    #     logger1.info(f'Ид которые не учитываются: {len(total_bad_ids)} шт: {total_bad_ids}')
+
+
+
+
+

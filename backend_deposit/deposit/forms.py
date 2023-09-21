@@ -3,6 +3,7 @@ import logging
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.forms import ClearableFileInput
 
 from backend_deposit.settings import TZ
 from .models import Deposit
@@ -48,8 +49,12 @@ class DepositImageForm(forms.ModelForm):
     phone = forms.CharField(widget=forms.HiddenInput)
     pay_sum = forms.IntegerField(widget=forms.HiddenInput)
 
+
     class Meta:
         model = Deposit
-        fields = ('uid', 'phone', 'pay_sum', 'uid', 'pay_screen')
+        fields = ('uid', 'phone', 'pay_sum', 'uid', 'pay_screen', 'input_transaction')
         # exclude = ('phone', 'pay_sum', 'uid',)
         hidden_fields = ('uid', 'phone', 'pay_sum', )
+        labels = {'pay_screen': 'pay_screen', 'input_transaction': 'input_transaction'}
+        # help_texts = {'pay_screen': 'pay_screen',
+        #               'input_transaction': 'input_transaction'}
