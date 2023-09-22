@@ -1,6 +1,5 @@
 import subprocess
 import time
-from ftplib import FTP, all_errors
 from pathlib import Path
 
 from config_data.ftp_conf import get_my_loggers, ftp_conf
@@ -9,7 +8,7 @@ logger, *other = get_my_loggers()
 
 BASE_DIR = Path(__file__).resolve().parent
 
-SCREEN_FOLDER = ftp_conf.adb.SCREEN_FOLDER
+SCREEN_FOLDER = Path(ftp_conf.adb.SCREEN_FOLDER)
 TARGET_DIR = BASE_DIR / 'screenshots'
 
 
@@ -79,7 +78,7 @@ def main():
             logger.debug(f'Время обработки файла: {time.perf_counter() - start}')
             time.sleep(0.5)
         except Exception as err:
-            logger.debug(err)
+            logger.debug(err, exc_info=True)
             time.sleep(1)
 
 

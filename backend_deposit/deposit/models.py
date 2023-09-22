@@ -25,9 +25,28 @@ class Incoming(models.Model):
     worker = models.CharField(max_length=50, null=True)
     image = models.ImageField(upload_to='screens/',
                               verbose_name='скрин', null=True, blank=True)
+    confirmed_deposit_pk = models.CharField(max_length=36, db_index=True, unique=True, null=True, blank=True)
 
     def __str__(self):
         string = f'{self.id} Отправитель: {self.sender}, Транзакция: {self.transaction}, pay: {self.pay}'
+        return string
+
+
+class Deposit(models.Model):
+    uid = models.CharField(max_length=36, db_index=True, unique=True, null=True, blank=True)
+    register_time = models.DateTimeField('Время добавления в базу', auto_now_add=True)
+    change_time = models.DateTimeField('Время изменения в базе', auto_now=True)
+    phone = models.CharField('Телефон отправителя')
+    pay_sum = models.IntegerField('Сумма платежа', validators=[MinValueValidator(5)])
+    input_transaction = models.IntegerField('Номер транзакции из чека',
+                                            null=True, blank=True, help_text='Номер транзакции из чека')
+    status = models.CharField('Статус депозита', default='pending')
+    pay_screen = models.ImageField(upload_to='pay_screens/',
+                                   verbose_name='Чек об оплате', null=True, blank=True, help_text='Скриншот чека')
+    confirmed_incoming = models.OneToOneField(Incoming, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        string = f'{self.id}. phone: {self.phone}, input_transaction: {self.input_transaction}, pay: {self.pay_sum}, pay_screen: {self.pay_screen}'
         return string
 
 
@@ -41,21 +60,7 @@ class BadScreen(models.Model):
     type = models.CharField(max_length=20, default='unknown')
 
 
-class Deposit(models.Model):
-    uid = models.CharField(max_length=36, db_index=True, unique=True, null=True, blank=True)
-    register_time = models.DateTimeField('Время добавления в базу', auto_now_add=True)
-    change_time = models.DateTimeField('Время изменения в базе', auto_now=True)
-    phone = models.CharField('Телефон отправителя')
-    pay_sum = models.IntegerField('Сумма платежа', validators=[MinValueValidator(5)])
-    input_transaction = models.IntegerField('Номер транзакции из чека', null=True, blank=True, help_text='Номер транзакции из чека')
-    status = models.CharField('Статус депозита', default='pending')
-    pay_screen = models.ImageField(upload_to='pay_screens/',
-                                   verbose_name='Чек об оплате', null=True, blank=True, help_text='Скриншот чека')
-    confirmed_incoming = models.ForeignKey(Incoming, null=True, blank=True, on_delete=models.SET_NULL)
 
-    def __str__(self):
-        string = f'{self.id}. phone: {self.phone}, input_transaction: {self.input_transaction}, pay: {self.pay_sum}, pay_screen: {self.pay_screen}'
-        return string
 
 
 @receiver(post_delete, sender=BadScreen)
@@ -75,34 +80,31 @@ def after_save_incoming(sender, instance: Incoming, **kwargs):
     try:
         logger.debug(f'Действие после сохранения корректного скрина: {instance}')
         pay = instance.pay
-        sender = instance.sender  # +994 70 *** ** 27
-        if sender:
-            cleaned_sender = sender.replace(' ', '')
-            cleaned_sender = re.sub(r'[*]+', '*', cleaned_sender)
-            logger.debug(f'cleaned sender: {cleaned_sender}')
-            sender = cleaned_sender #  +99470*27
-
-        if '*' in sender:
-            splitted = sender.split('*')
-            sender_start, sender_end = splitted[0], splitted[1]
-            # найдем все депозиты с этими данными за последние 10 минут:
-            treshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
-            logger.debug(f'Ищем депозиты не позднее чем: {str(treshold)}')
-            deposits = Deposit.objects.filter(
-                status='pending',
-                pay_sum=pay,
-                phone__startswith=sender_start,
-                phone__endswith=sender_end,
-                register_time__gte=treshold
-            ).all()
-            logger.debug(f'Найденные deposits: {deposits}')
-            if deposits:
-                deposit = deposits.first()
-                logger.debug(f'Подтверждаем депозит {deposit}')
-                deposit.confirmed_incoming = instance
-                deposit.status = 'confirmed'
-                deposit.save()
-                logger.debug(f'Депозит подтвержден: {deposit}')
+        # sender = instance.sender  # +994 70 *** ** 27
+        # if sender:
+        #     cleaned_sender = sender.replace(' ', '')
+        #     cleaned_sender = re.sub(r'[*]+', '*', cleaned_sender)
+        #     logger.debug(f'cleaned sender: {cleaned_sender}')
+        #     sender = cleaned_sender #  +99470*27
+        transaction = instance.transaction
+        transaction_list = [transaction - 1, transaction + 1]
+        treshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
+        logger.debug(f'Ищем депозиты не позднее чем: {str(treshold)}')
+        deposits = Deposit.objects.filter(
+            status='pending',
+            pay_sum=pay,
+            phone__startswith=sender_start,
+            phone__endswith=sender_end,
+            register_time__gte=treshold
+        ).all()
+        logger.debug(f'Найденные deposits: {deposits}')
+        if deposits:
+            deposit = deposits.first()
+            logger.debug(f'Подтверждаем депозит {deposit}')
+            deposit.confirmed_incoming = instance
+            deposit.status = 'confirmed'
+            deposit.save()
+            logger.debug(f'Депозит подтвержден: {deposit}')
 
     except Exception as err:
         logger.error(err, exc_info=True)
