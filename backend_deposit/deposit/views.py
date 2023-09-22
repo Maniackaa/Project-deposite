@@ -123,8 +123,8 @@ def screen(request: Request):
     Прием сриншота
     """
     host = request.META["HTTP_HOST"]  # получаем адрес сервера
-    user_agent = request.META["HTTP_USER_AGENT"]  # получаем данные бразера
-    forwarded = request.META["HTTP_X_FORWARDED_FOR"]
+    user_agent = request.META.get("HTTP_USER_AGENT")  # получаем данные бразера
+    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
     path = request.path
     logger.debug(f'{request.data}')
     logger.debug(host)

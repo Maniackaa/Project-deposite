@@ -25,7 +25,8 @@ class Incoming(models.Model):
     worker = models.CharField(max_length=50, null=True)
     image = models.ImageField(upload_to='screens/',
                               verbose_name='скрин', null=True, blank=True)
-    confirmed_deposit_pk = models.CharField(max_length=36, db_index=True, unique=True, null=True, blank=True)
+    # confirmed_deposit_pk = models.CharField(max_length=36, db_index=True, unique=True, null=True, blank=True)
+    confirmed_deposit_pk = models.OneToOneField('Deposit', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         string = f'{self.id} Отправитель: {self.sender}, Транзакция: {self.transaction}, pay: {self.pay}'
@@ -60,9 +61,6 @@ class BadScreen(models.Model):
     type = models.CharField(max_length=20, default='unknown')
 
 
-
-
-
 @receiver(post_delete, sender=BadScreen)
 def bad_screen_image_delete(sender, instance, **kwargs):
     if instance.image.name:
@@ -78,24 +76,20 @@ def screen_image_delete(sender, instance, **kwargs):
 @receiver(post_save, sender=Incoming)
 def after_save_incoming(sender, instance: Incoming, **kwargs):
     try:
+        if instance.confirmed_deposit_pk:
+            logger.debug('post_save return')
+            return
         logger.debug(f'Действие после сохранения корректного скрина: {instance}')
         pay = instance.pay
-        # sender = instance.sender  # +994 70 *** ** 27
-        # if sender:
-        #     cleaned_sender = sender.replace(' ', '')
-        #     cleaned_sender = re.sub(r'[*]+', '*', cleaned_sender)
-        #     logger.debug(f'cleaned sender: {cleaned_sender}')
-        #     sender = cleaned_sender #  +99470*27
         transaction = instance.transaction
-        transaction_list = [transaction - 1, transaction + 1]
+        transaction_list = [transaction - 1, transaction + 1, transaction + 2]
         treshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
         logger.debug(f'Ищем депозиты не позднее чем: {str(treshold)}')
         deposits = Deposit.objects.filter(
             status='pending',
             pay_sum=pay,
-            phone__startswith=sender_start,
-            phone__endswith=sender_end,
-            register_time__gte=treshold
+            register_time__gte=treshold,
+            input_transaction__in=transaction_list
         ).all()
         logger.debug(f'Найденные deposits: {deposits}')
         if deposits:
@@ -105,7 +99,9 @@ def after_save_incoming(sender, instance: Incoming, **kwargs):
             deposit.status = 'confirmed'
             deposit.save()
             logger.debug(f'Депозит подтвержден: {deposit}')
+            logger.debug(f'Сохраняем confirmed_deposit_pk: {deposit.pk}')
+            instance.confirmed_deposit_pk = deposit.pk
+            instance.save()
 
     except Exception as err:
         logger.error(err, exc_info=True)
-
