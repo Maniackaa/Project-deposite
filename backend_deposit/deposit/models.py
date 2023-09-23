@@ -25,7 +25,6 @@ class Incoming(models.Model):
     worker = models.CharField(max_length=50, null=True)
     image = models.ImageField(upload_to='screens/',
                               verbose_name='скрин', null=True, blank=True)
-    # confirmed_deposit_pk = models.CharField(max_length=36, db_index=True, unique=True, null=True, blank=True)
     confirmed_deposit_pk = models.OneToOneField('Deposit', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):

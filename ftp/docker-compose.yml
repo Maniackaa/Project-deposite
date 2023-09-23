@@ -1,15 +1,25 @@
-version: '3'
+version: '3.7'
 
 services:
   grabber:
-    container_name: ftp_grabber
+    container_name: adb_grabber
     build: .
     env_file: .env
+    command: python3 adb_grabber.py
+    privileged: true
     volumes:
       - ./logs/ftp_grabber:/app/logs
       - ./screenshots:/app/screenshots
-#    ports:
-#      - "$FTP_PORT:$FTP_PORT"
+    environment:
+      - ANDROID_ADB_SERVER_ADDRESS=host.docker.internal
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    ports:
+      - "5037:5037"
+#    expose:
+#      - "5037"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: always
 
   sender:
@@ -31,3 +41,5 @@ services:
       - ./logs/ftp_sender:/app/logs
       - ./screenshots:/app/screenshots
     restart: always
+
+
