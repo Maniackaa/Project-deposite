@@ -24,8 +24,12 @@ def main():
                 try:
                     start = time.perf_counter()
                     size = file.lstat().st_size
+                    if size > 500000:
+                        logger.debug(f'Удаляем большой файл {file.name}')
+                        file.unlink()
+                        pass
 
-                    if size > 0:
+                    elif size > 0:
                         logger.debug(f'Отправляем {file.name, size, bool(size>0)}')
                         with open(file, "rb") as binary:
                             screen = {'image': binary}
