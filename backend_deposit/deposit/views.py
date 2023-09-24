@@ -247,12 +247,15 @@ def screen(request: Request):
                                     charset='utf-8')
 
         else:
-            # Действие если скрин не по известному шаблону
-            logger.debug('скрин не по известному шаблону')
-            BadScreen.objects.create(name=name, worker=worker, image=image)
-            return HttpResponse(status=status.HTTP_200_OK,
-                                reason='not recognize',
-                                charset='utf-8')
+            try:
+                # Действие если скрин не по известному шаблону
+                logger.debug('скрин не по известному шаблону')
+                BadScreen.objects.create(name=name, worker=worker, image=image)
+                return HttpResponse(status=status.HTTP_200_OK,
+                                    reason='not recognize',
+                                    charset='utf-8')
+            except Exception as err:
+                logger.error(err, exc_info=True)
 
     # Ошибка при обработке
     except Exception as err:
