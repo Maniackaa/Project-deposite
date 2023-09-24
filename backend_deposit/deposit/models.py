@@ -29,7 +29,7 @@ class Incoming(models.Model):
     confirmed_deposit = models.OneToOneField('Deposit', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        string = f'{self.id} Отправитель: {self.sender}, Транзакция: {self.transaction}, pay: {self.pay}'
+        string = f'Incoming {self.id} {self.transaction}, pay: {self.pay}'
         return string
 
 
@@ -48,7 +48,7 @@ class Deposit(models.Model):
     confirmed_incoming = models.OneToOneField(Incoming, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        string = f'{self.id}. phone: {self.phone}, input_transaction: {self.input_transaction}, pay: {self.pay_sum}, pay_screen: {self.pay_screen}'
+        string = f'Deposit {self.id}. {self.input_transaction}, pay: {self.pay_sum}, pay_screen: {self.pay_screen}'
         return string
 
 
