@@ -129,17 +129,18 @@ def screen(request: Request):
     """
     Прием сриншота
     """
-    host = request.META["HTTP_HOST"]  # получаем адрес сервера
-    user_agent = request.META.get("HTTP_USER_AGENT")  # получаем данные бразера
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-    path = request.path
-    logger.debug(f'{request.data}')
-    logger.debug(host)
-    logger.debug(user_agent)
-    logger.debug(path)
-    logger.debug(forwarded)
-
     try:
+        host = request.META["HTTP_HOST"]  # получаем адрес сервера
+        user_agent = request.META.get("HTTP_USER_AGENT")  # получаем данные бразера
+        forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
+        path = request.path
+        logger.debug(f'{request.data}')
+        logger.debug(host)
+        logger.debug(user_agent)
+        logger.debug(path)
+        logger.debug(forwarded)
+
+
         # params_example {'name': '/DCIM/Screen.jpg', 'worker': 'Station 1}
         image = request.data.get('image')
         worker = request.data.get('worker')
