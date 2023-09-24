@@ -36,9 +36,10 @@ def get_file_list(directory, adb_device):
 def main():
 
     while True:
-        adb_client = AdbClient(host="host.docker.internal", port=5037)
-        # adb_client = AdbClient(host="127.0.0.1", port=5037)
+        # adb_client = AdbClient(host="host.docker.internal", port=5037)
+        adb_client = AdbClient(host="127.0.0.1", port=5037)
         adb_devices = adb_client.device_list()
+        print(adb_devices)
         if adb_devices:
             adb_device = adb_devices[0]
         else:
