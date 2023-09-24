@@ -24,7 +24,7 @@ def main():
                 try:
                     start = time.perf_counter()
                     size = file.lstat().st_size
-                    if size > 500000:
+                    if size > 300000:
                         logger.debug(f'Удаляем большой файл {file.name}')
                         file.unlink()
                         pass
