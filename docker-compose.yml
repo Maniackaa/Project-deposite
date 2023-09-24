@@ -114,6 +114,15 @@ services:
       - ./backend_deposit:/app
     entrypoint: /app/entrypoint.sh
 
+  testocr:
+    build: ./backend_deposit
+    restart: always
+    env_file: .env
+    volumes:
+      - ./backend_deposit:/app
+    entrypoint: /app/test_entrypoint.sh
+    command: python3 test_response_ocr.py
+
   nginx:
     image: nginx:1.19.3
     env_file: .env

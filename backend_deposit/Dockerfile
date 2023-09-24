@@ -9,4 +9,5 @@ COPY . .
 COPY rus.traineddata /usr/share/tesseract-ocr/5/tessdata/
 COPY rus.traineddata /usr/share/tesseract-ocr/4.00/tessdata/
 RUN ["chmod", "+x", "/app/entrypoint.sh"]
-ENTRYPOINT ["/app/entrypoint.sh"]
+RUN ["chmod", "+x", "/app/test_entrypoint.sh"]
+#ENTRYPOINT ["/app/entrypoint.sh"]

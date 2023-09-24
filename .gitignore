@@ -36,6 +36,12 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+*.log
+*.log.*
+
+./backend_deposit/collected_static/
+./backend_deposit/media/
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
