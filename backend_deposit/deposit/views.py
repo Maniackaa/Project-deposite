@@ -159,7 +159,8 @@ def screen(request: Request):
 
         pay_status = pay.pop('status')
         errors = pay.pop('errors')
-        logger.warning(f'errors: {errors}')
+        if errors:
+            logger.warning(f'errors: {errors}')
         sms_type = pay.get('type')
 
         # Если шаблон найден:
