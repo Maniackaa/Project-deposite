@@ -34,27 +34,41 @@ class DepositForm(forms.ModelForm):
         return cleaned_phone
 
     uid = forms.CharField(widget=forms.HiddenInput)
+    input_transaction = forms.CharField(widget=forms.HiddenInput, required=False)
 
     class Meta:
         model = Deposit
         fields = ('phone', 'pay_sum', 'uid')
-        hidden_fields = ('uid',)
+        hidden_fields = ('uid',  'input_transaction')
         help_texts = {'phone': 'Ваш телефон',
                       'pay_sum': 'Сумма платежа'}
         labels = {'phone': 'Your phone', 'pay_sum': 'Pay summ (Min: 5 AZN, Max: Unlim)'}
 
 
 class DepositImageForm(forms.ModelForm):
-    uid = forms.CharField(widget=forms.HiddenInput)
-    phone = forms.CharField(widget=forms.HiddenInput)
-    pay_sum = forms.IntegerField(widget=forms.HiddenInput)
-
+    uid = forms.CharField(widget=forms.HiddenInput, disabled=True)
+    phone = forms.CharField(widget=forms.HiddenInput, disabled=True)
+    pay_sum = forms.IntegerField(widget=forms.HiddenInput, disabled=True)
+    input_transaction = forms.IntegerField(widget=forms.HiddenInput, disabled=True)
 
     class Meta:
         model = Deposit
         fields = ('uid', 'phone', 'pay_sum', 'uid', 'pay_screen', 'input_transaction')
         # exclude = ('phone', 'pay_sum', 'uid',)
-        hidden_fields = ('uid', 'phone', 'pay_sum', )
-        labels = {'pay_screen': 'pay_screen', 'input_transaction': 'input_transaction'}
+        hidden_fields = ('uid', 'phone', 'pay_sum', 'input_transaction')
+        labels = {'pay_screen': '', 'input_transaction': 'Номер тарнзакции'}
         # help_texts = {'pay_screen': 'pay_screen',
         #               'input_transaction': 'input_transaction'}
+
+
+class DepositTransactionForm(forms.ModelForm):
+    uid = forms.CharField(widget=forms.HiddenInput)
+    phone = forms.CharField(widget=forms.HiddenInput)
+    pay_sum = forms.CharField(widget=forms.HiddenInput)
+    input_transaction = forms.IntegerField(required=False, min_value=50_000_000, max_value=99_999_999)
+
+    class Meta:
+        model = Deposit
+        fields = ('uid', 'phone', 'pay_sum', 'uid', 'input_transaction')
+        hidden_fields = ('uid', 'phone', 'pay_sum')
+        labels = {'pay_screen': '', 'input_transaction': 'Номер тарнзакции'}

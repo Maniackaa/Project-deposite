@@ -5,52 +5,51 @@
       <div class="col-md-4">
         <div class="card">
           <div class="card-header">
-            Депозит создан
+              <b>Депозит создан</b>
             <div class="card-body">
                 Ваш уникальный идентификатор:<br>
-                {{uid}}<br><br>
-                Вы можете отследить статус вашего платежа здесь:<br>
-                <a href="{% url 'deposit:status' uid %}">Статус платежа</a>
-            </div>
-
-              <form method="post" enctype="multipart/form-data" action="{% url 'deposit:created' %}">
-                        {% csrf_token %}
-
-                        {% for field in form %}
-
-                            {% if not field.is_hidden %}
-
-                            {% endif %}
-                                {{ field }}
-
-                            {% if not field.is_hidden %}
-                                    <br>
-                                    <small id="{{ field.id_for_label }}-help" class="form-text text-muted">
-                                        {{ field.help_text|safe }}
-                                    </small>
-                                    <br><br>
-
-                            {% endif %}
-
-                        {% endfor %}
+                <p>{{deposit.uid}}</p>
 
 
+              {% if not deposit.input_transaction %}
+                <p>Для подтверждения оплаты введите номер транзакции из вашего чека об оплате:</p>
+                <form method="post" enctype="multipart/form-data" action="{% url 'deposit:created' %}">
+                {% csrf_token %}
+                      {% for field in form %}
 
+                            {{ field }}
 
+                        {% if not field.is_hidden %}
+                                <br>
+                                <small id="{{ field.id_for_label }}-help" class="form-text text-muted">
+                                    {{ field.help_text|safe }}
+                                </small>
+
+                        {% endif %}
+
+                    {% for error in field.errors %}
+                        {{error}}
+                            {% endfor %}
+
+                {% endfor %}
+
+                  <br>
+                  <button type="submit" class="btn btn-primary">
+                       Сохранить
+                    </button>
+                {% endif %}
+              </form>
                   <br>
               <div class="d-flex justify-content-around">
 
-                  {% if pay_screen %}
-                  <button type="submit" class="btn btn-primary">
-                       Сохранить
-                  </button>
-                  {% else %}
-                  <button type="submit" class="btn btn-primary">
-                       Сохранить
-                  </button>
+            </div>
+                  {% if deposit.input_transaction %}
+                    <p>Не позднее чем через 5 минут статус вашего должен изменться на 'approved'<p>
+                    <p>Текущий статус вашего платежа: <b>{{deposit.status}}</b></p>
+                    <p>Если через 5 минут статус не изменился, прикрепите скриншот чека на странице статуса платежа:<p>
+                    <a href="{% url 'deposit:status' deposit.uid %}">Статус платежа</a>
                   {% endif %}
-              </div>
-
+          </div>
         </div>
       </div>
     </div>

@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
-
+{% load crispy_forms_tags %}
 {% block title %}Статус депозита{% endblock %}
 {% block content %}
 
-      <div class="col-md-3">
+      <div class="col-md-4">
         <div class="card">
           <div class="card-header">
-            <div class="card-body">
+            <div class="card-body ">
               {% if deposit %}
                 Ваш депозит № {{deposit.id}}:<br>
                 <b>Сумма:</b> {{deposit.pay_sum}} AZN<br>
                 <b>Статус</b>: {{deposit.status}}<br>
-                <b>Чек: </b>
+                <b>Транзакция</b>: {{deposit.input_transaction}}<br>
+                <b>Чек:<br></b>
 
               {% else %}
                 Депозит с таким идентификатором не найден
@@ -22,6 +23,19 @@
               {% else %}
                 Отсутствует
               {% endif %}
+
+              <form method="post" enctype="multipart/form-data" action="{% url 'deposit:status' deposit.uid %}">
+                {% csrf_token %}
+
+                {{ form|crispy }}
+              <span  class="">
+                <br><button type="submit" class="btn btn-primary pull-left">
+                  Сохранить
+                </button>
+                  <a href="{% url 'deposit:status' deposit.uid %}" class="btn btn-info pull-right">Обновить</a>
+              </span >
+              </form>
+
             </div>
 
         </div>

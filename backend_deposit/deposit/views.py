@@ -4,7 +4,7 @@ import time
 import uuid
 
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.http import urlencode
 
@@ -14,7 +14,7 @@ from rest_framework.request import Request
 
 
 
-from deposit.forms import DepositForm, DepositImageForm
+from deposit.forms import DepositForm, DepositImageForm, DepositTransactionForm
 from deposit.func import img_path_to_str
 from deposit.models import BadScreen, Incoming, Deposit
 from deposit.screen_response import screen_text_to_pay
@@ -24,96 +24,124 @@ logger = logging.getLogger(__name__)
 # logging.config.dictConfig(LOGCONFIG)
 
 
+# def index(request, *args, **kwargs):
+#     logger.debug(f'index {request}')
+#     form = DepositForm(request.POST or None,
+#                        files=request.FILES or None, initial={'phone': '+994', 'uid': uuid.uuid4()})
+#     if request.method == 'POST':
+#         logger.debug('index POST')
+#         if form.is_valid():
+#             form.save(commit=False)
+#             return redirect('deposit:deposit_confirm',
+#                             form=form,
+#                             )
+#         else:
+#             logger.debug('form.invalid')
+#             raise ValueError()
+#     template = 'deposit/index.html'
+#     context = {'hello': f'Привет!\n', 'form': form}
+#     return render(request, template, context)
+
+
 def index(request, *args, **kwargs):
-    logger.debug(f'index {request}')
-    form = DepositForm(request.POST or None,
-                       files=request.FILES or None, initial={'phone': '+994', 'uid': uuid.uuid4()})
-    if request.method == 'POST':
-        logger.debug('index POST')
-        if form.is_valid():
-            form.save(commit=False)
-            return redirect('deposit:deposit_confirm',
-                            form=form,
-                            )
-        else:
-            logger.debug('form.invalid')
-            raise ValueError()
-    template = 'deposit/index.html'
-    context = {'hello': f'Привет!\n', 'form': form}
-    return render(request, template, context)
-
-
-def deposit_confirm(request):
     try:
-        logger.debug(f'deposit_confirm {request}')
-        form = DepositForm(request.POST or request.GET or None, files=request.FILES or None)
-        template = 'deposit/deposit_confirm.html'
+        logger.debug(f'index {request}')
+        uid = uuid.uuid4()
+        form = DepositForm(request.POST or None, files=request.FILES or None, initial={'phone': '+994', 'uid': uid})
+        # form = DepositImageForm(request.POST or None, files=request.FILES or None, initial={'phone': '+994', 'uid': uid})
         if request.method == 'POST':
+            logger.debug('index POST')
+            data = request.POST
+            uid = data.get('uid')
+            deposit = Deposit.objects.filter(uid=uid).first()
+            if deposit:
+                template = 'deposit/deposit_created.html'
+                form = DepositTransactionForm(request.POST, instance=deposit)
+                context = {'form': form, 'deposit': deposit}
+                return render(request, template_name=template, context=context)
             if form.is_valid():
-                template = 'deposit/deposit_confirm.html'
+                logger.debug('form valid')
+                form.save()
+                uid = form.cleaned_data.get('uid')
+                deposit = Deposit.objects.get(uid=uid)
+                logger.debug(f'form save')
+                template = 'deposit/deposit_created.html'
+                form = DepositTransactionForm(request.POST, instance=deposit)
+                context = {'form': form, 'deposit': deposit}
+                return render(request, template_name=template, context=context)
+            else:
+                template = 'deposit/index.html'
                 context = {'form': form}
                 return render(request, template_name=template, context=context)
 
-        logger.debug(f'GET ')
+        logger.debug(f'index GET ')
+
         context = {'form': form}
+        template = 'deposit/index.html'
         return render(request, template_name=template, context=context)
     except Exception as err:
-        logger.error('ошибка')
+        logger.error('ошибка', exc_info=True)
         raise err
 
 
 def deposit_created(request):
     logger.debug(f'deposit_created: {request}')
-    if request.method == 'GET':
-        logger.debug(f'deposit_created {request}')
-        form = DepositImageForm(request.GET, files=request.FILES or None)
-        uid = form.get_context()['hidden_fields'][0].value()
-        if form.is_valid():
-            form.save()
-        else:
-            pass
-        template = 'deposit/deposit_created.html'
-        context = {'uid': uid, 'form': form}
-        return render(request, template_name=template, context=context)
     if request.method == 'POST':
         data = request.POST
+        print('POST deposit_created', data)
         uid = data['uid']
-        input_transaction = data.get('input_transaction') or None
+        phone = data['phone']
+        pay = data['pay_sum']
+        deposit = Deposit.objects.filter(uid=uid).exists()
+        print(deposit)
+        print(uid, phone, pay)
+        if not deposit:
+            form = DepositTransactionForm(request.POST or None, files=request.FILES or None, initial={'phone': phone, 'uid': uid, 'pay_sum': pay})
+            if form.is_valid():
+                form.save()
+                logger.debug('Форма сохранена')
+            else:
+                logger.debug(f'Форма не валидная: {form}')
+                for error in form.errors:
+                    logger.warning(f'{error}')
+                template = 'deposit/index.html'
+                context = {'form': form}
+                return render(request, template_name=template, context=context)
+
         deposit = Deposit.objects.get(uid=uid)
-        if deposit.pay_screen:
-            old_screen_name = deposit.pay_screen.name
-        else:
-            old_screen_name = None
-
-        screen_clear = data.get('pay_screen-clear')
-
-        if screen_clear:
-            pay_screen = None
-            screen_name = None
-            deposit.pay_screen.delete(save=False)
-        else:
-            pay_screen = request.FILES.get('pay_screen') or deposit.pay_screen
-            screen_name = pay_screen.name
-
-        if pay_screen and old_screen_name != screen_name:
-            deposit.pay_screen = pay_screen
-
+        logger.debug(f'deposit: {deposit}')
+        input_transaction = data.get('input_transaction') or None
+        logger.debug(f'input_transaction: {input_transaction}')
         deposit.input_transaction = input_transaction
-
-        deposit.save()
-
-        form = DepositImageForm(instance=deposit)
+        form = DepositTransactionForm(request.POST, files=request.FILES, instance=deposit)
+        form.save()
         template = 'deposit/deposit_created.html'
 
-        context = {'uid': uid, 'form': form, 'deposit': deposit, 'pay_screen': pay_screen}
+        context = {'form': form, 'deposit': deposit, 'pay_screen': None}
         return render(request, template_name=template, context=context)
 
 
 def deposit_status(request, uid):
     logger.debug(f'deposit_status {request}')
     template = 'deposit/deposit_status.html'
-    deposite = Deposit.objects.filter(uid=uid).first()
-    context = {'deposit': deposite}
+    deposit = get_object_or_404(Deposit, uid=uid)
+    form = DepositImageForm(request.POST, files=request.FILES, instance=deposit)
+    if request.method == 'POST' and form.has_changed():
+        logger.debug(f'has_changed: {form.has_changed()}')
+        if form.is_valid():
+            form.save()
+        else:
+            form = DepositTransactionForm(instance=deposit, files=request.FILES)
+            template = 'deposit/deposit_created.html'
+            context = {'form': form, 'deposit': deposit, 'pay_screen': deposit.pay_screen}
+            return render(request, template_name=template, context=context)
+        form = DepositImageForm(instance=deposit)
+        context = {'deposit': deposit, 'form': form}
+        return render(request, template_name=template, context=context)
+    # form = DepositImageForm(initial=deposit.__dict__, instance=deposit)
+    context = {'deposit': deposit, 'form': form}
+    logger.debug(f'has_changed: {form.has_changed()}')
+
     return render(request, template_name=template, context=context)
 
 
@@ -220,6 +248,7 @@ def screen(request: Request):
 
         else:
             # Действие если скрин не по известному шаблону
+            logger.debug('скрин не по известному шаблону')
             BadScreen.objects.create(name=name, worker=worker, image=image)
             return HttpResponse(status=status.HTTP_200_OK,
                                 reason='not recognize',

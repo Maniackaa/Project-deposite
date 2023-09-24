@@ -1,4 +1,6 @@
 {% for field in form %}
+
+
   <div class="form-group row my-3"
     {% if field.field.required %}
       aria-required="true"
@@ -9,16 +11,16 @@
         <div class="alert alert-danger">
           {{ error|escape }}
         </div>
-
     {% endfor %}
     {% for error in form.non_field_errors %}
       <div class="alert alert-danger">
           {{ error|escape }}
       </div>
     {% endfor %}
+    {% if not field.is_hidden %}
+
     <label for="{{ field.id_for_label }}">
-      {{field.hidden}}
-      {% if field.name != 'uid'%}
+
       {{ field.label }}
         {% if field.field.required %}
           <span class="required text-danger">*</span>
@@ -34,4 +36,5 @@
       {% endif %}
     </div>
   </div>
+
 {% endfor %}

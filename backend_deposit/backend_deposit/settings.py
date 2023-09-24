@@ -19,7 +19,10 @@ MY_APPS = [
     'users.apps.UsersConfig',
     'deposit.apps.DepositConfig',
     'api.apps.ApiConfig',
+    'crispy_forms',
+    'crispy_bootstrap4'
 ]
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -158,7 +161,7 @@ LOGGING = {
     'formatters': {
         'default_formatter': {
             # 'format': "%(asctime)s - %(levelname)s - %(funcName)s: %(lineno)d - %(message)s"
-            'format': '%(asctime)s %(levelname)s %(module)s \n%(message)s\n',
+            'format': '%(asctime)s %(levelname)s %(module)s/%(funcName)s \n%(message)s\n',
         },
     },
     'handlers': {
