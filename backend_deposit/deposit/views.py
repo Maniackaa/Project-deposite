@@ -134,12 +134,11 @@ def screen(request: Request):
         user_agent = request.META.get("HTTP_USER_AGENT")  # получаем данные бразера
         forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
         path = request.path
-        logger.debug(f'{request.data}')
-        logger.debug(host)
-        logger.debug(user_agent)
-        logger.debug(path)
-        logger.debug(forwarded)
-
+        logger.debug(f'request.data: {request.data},'
+                     f' host: {host},'
+                     f' user_agent: {user_agent},'
+                     f' path: {path},'
+                     f' forwarded: {forwarded}')
 
         # params_example {'name': '/DCIM/Screen.jpg', 'worker': 'Station 1}
         image = request.data.get('image')
@@ -231,6 +230,8 @@ def screen(request: Request):
                 # Действие если скрин не по известному шаблону
                 logger.debug('скрин не по известному шаблону')
                 BadScreen.objects.create(name=name, worker=worker, image=image)
+                logger.debug(f'BadScreen сохранен')
+                logger.debug(f'Возвращаем статус 200: not recognize')
                 return HttpResponse(status=status.HTTP_200_OK,
                                     reason='not recognize',
                                     charset='utf-8')
