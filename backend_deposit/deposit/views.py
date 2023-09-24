@@ -238,6 +238,7 @@ def screen(request: Request):
 
     # Ошибка при обработке
     except Exception as err:
+        logger.debug(f'Ошибка при обработке скрина: {err}')
         logger.error(err, exc_info=True)
         logger.debug(f'{request.data}')
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST,
