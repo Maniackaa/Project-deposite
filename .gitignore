@@ -41,6 +41,7 @@ pip-delete-this-directory.txt
 
 ./backend_deposit/collected_static/
 ./backend_deposit/media/
+./backend_deposit/test/
 
 # Unit test / coverage reports
 htmlcov/

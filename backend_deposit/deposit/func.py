@@ -46,7 +46,7 @@ def img_path_to_str(file_bytes):
     try:
         nparr = np.frombuffer(file_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.COLOR_RGB2GRAY)
-        _, binary = cv2.threshold(img, 80, 242, cv2.THRESH_BINARY)
+        _, binary = cv2.threshold(img, 222, 242, cv2.THRESH_BINARY)
         string = pytesseract.image_to_string(binary, lang='rus')
         string = string.replace('\n', ' ')
         return string

@@ -13,7 +13,6 @@ from rest_framework.decorators import api_view
 from rest_framework.request import Request
 
 
-
 from deposit.forms import DepositForm, DepositImageForm, DepositTransactionForm
 from deposit.func import img_path_to_str
 from deposit.models import BadScreen, Incoming, Deposit
@@ -21,26 +20,6 @@ from deposit.screen_response import screen_text_to_pay
 from deposit.serializers import IncomingSerializer
 
 logger = logging.getLogger(__name__)
-# logging.config.dictConfig(LOGCONFIG)
-
-
-# def index(request, *args, **kwargs):
-#     logger.debug(f'index {request}')
-#     form = DepositForm(request.POST or None,
-#                        files=request.FILES or None, initial={'phone': '+994', 'uid': uuid.uuid4()})
-#     if request.method == 'POST':
-#         logger.debug('index POST')
-#         if form.is_valid():
-#             form.save(commit=False)
-#             return redirect('deposit:deposit_confirm',
-#                             form=form,
-#                             )
-#         else:
-#             logger.debug('form.invalid')
-#             raise ValueError()
-#     template = 'deposit/index.html'
-#     context = {'hello': f'Привет!\n', 'form': form}
-#     return render(request, template, context)
 
 
 def index(request, *args, **kwargs):
@@ -48,7 +27,6 @@ def index(request, *args, **kwargs):
         logger.debug(f'index {request}')
         uid = uuid.uuid4()
         form = DepositForm(request.POST or None, files=request.FILES or None, initial={'phone': '+994', 'uid': uid})
-        # form = DepositImageForm(request.POST or None, files=request.FILES or None, initial={'phone': '+994', 'uid': uid})
         if request.method == 'POST':
             logger.debug('index POST')
             data = request.POST
@@ -114,7 +92,8 @@ def deposit_created(request):
         logger.debug(f'input_transaction: {input_transaction}')
         deposit.input_transaction = input_transaction
         form = DepositTransactionForm(request.POST, files=request.FILES, instance=deposit)
-        form.save()
+        if form.is_valid():
+            form.save()
         template = 'deposit/deposit_created.html'
 
         context = {'form': form, 'deposit': deposit, 'pay_screen': None}
@@ -186,7 +165,6 @@ def screen(request: Request):
         # Если шаблон найден:
         if sms_type:
             transaction = pay.get('transaction')
-
             is_incoming_duplicate = Incoming.objects.filter(transaction=transaction)
             # Если дубликат:
             if is_incoming_duplicate:
@@ -261,7 +239,7 @@ def screen(request: Request):
     # Ошибка при обработке
     except Exception as err:
         logger.error(err, exc_info=True)
-        logger.debug(f'{request.data} {request._request.get_host()}')
+        logger.debug(f'{request.data}')
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST,
                             reason=f'{err}',
                             charset='utf-8')
