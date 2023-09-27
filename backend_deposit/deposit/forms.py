@@ -41,8 +41,7 @@ class DepositEditForm(forms.ModelForm):
     phone = forms.Field(disabled=True)
     pay_sum = forms.Field(disabled=True)
     input_transaction = forms.Field(disabled=True)
-    # pay_screen = forms.ImageField()
-    confirmed_incoming = forms.ModelChoiceField(queryset=Incoming.objects.all(), blank=True, required=False)
+    confirmed_incoming = forms.ModelChoiceField(queryset=Incoming.objects.filter(confirmed_deposit=None).order_by('-id').all(), blank=True, required=False)
     status = forms.CharField(widget=forms.HiddenInput, disabled=True)
 
 
