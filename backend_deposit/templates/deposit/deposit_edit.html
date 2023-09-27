@@ -44,13 +44,13 @@
     <table class="table table-sm table-light">
      <thead>
        <th>id</th>
-       <th>Дата регистрации</th>
+       <th class="centered">Дата регистрации</th>
        <th>Дата на чеке</th>
        <th>Получатель</th>
        <th>Отправитель</th>
        <th>Сумма</th>
        <th>Баланс</th>
-       <th>Транзакция введенная</th>
+       <th>Транзакция с чека</th>
        <th>Шаблон</th>
        <th>Станция</th>
        <th>Чек</th>
@@ -60,15 +60,15 @@
      <tr>
         <td>{{ incoming.id }}</td>
         <td>{{ incoming.register_date }}</td>
-         <td>{{ incoming.response_date }}</td>
+        <td>{{ incoming.response_date }}</td>
         <td>{{ incoming.recipient }}</td>
         <td>{{ incoming.sender }}</td>
-        <td>{{ incoming.pay }}</td>
+        <td >{{ incoming.pay }}</td>
         <td>{{ incoming.balance }}</td>
         <td>{{ incoming.transaction }}</td>
         <td>{{ incoming.type }}</td>
-         <td>{{ incoming.worker }}</td>
-         <td>{{ incoming.image }}</td>
+        <td>{{ incoming.worker }}</td>
+        <td>{{ incoming.image }}</td>
      </tr>
      {% endfor %}
     </table>

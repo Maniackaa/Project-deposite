@@ -40,8 +40,8 @@ class Deposit(models.Model):
     change_time = models.DateTimeField('Время изменения в базе', auto_now=True)
     phone = models.CharField('Телефон отправителя')
     pay_sum = models.IntegerField('Сумма платежа', validators=[MinValueValidator(5)])
-    input_transaction = models.IntegerField('Номер транзакции из чека',
-                                            null=True, blank=True, help_text='Номер транзакции из чека',
+    input_transaction = models.IntegerField('Введенная транзакция с чека',
+                                            null=True, blank=True, help_text='Введите транзакцию из чека',
                                             validators=[MinValueValidator(50000000), MaxValueValidator(99999999)])
     status = models.CharField('Статус депозита',
                               default='pending',

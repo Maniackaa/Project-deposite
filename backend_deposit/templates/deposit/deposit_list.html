@@ -4,27 +4,37 @@
 
 {% block content %}
 {% include 'includes/switcher.html' %}
-   <table class="table table-sm table-light">
-     <thead>
-       <th>id</th>
-       <th>Телефон</th>
-       <th>Сумма</th>
-       <th>4</th>
-       <th>5</th>
-       <th>6</th>
-       <th>7</th>
+   <table class="table table-striped">
+     <thead class="thead-dark align-content-center">
+       <tr>
+           <th>id</th>
+           <th>Дата регистрации</th>
+           <th>change_time</th>
+           <th>Телефон</th>
+           <th>Сумма</th>
+           <th>Введенная транзакция</th>
+           <th>Статус</th>
+           <th>Прикрепленный чек</th>
+           <th>Привязанный платеж</th>
+           <th>Действие</th>
+       </tr>
      </thead>
-     {% for deposit in page_obj %}
-     <tr>
-        <td>{{ deposit.id }}</td>
-        <td>{{ deposit.register_time }}</td>
-        <td>{{ deposit.phone }}</td>
-        <td>{{ deposit.pay_sum }}</td>
-        <td>{{ deposit.input_transaction }}</td>
-        <td>{{ deposit.get_status_display }}</td>
-        <td>{{ deposit.confirmed_incoming }}</td>
-     </tr>
-     {% endfor %}
+     <tbody>
+         {% for deposit in page_obj %}
+         <tr>
+            <td>{{ deposit.id }}</td>
+            <td>{{ deposit.register_time }}</td>
+            <td class="centered">{{ deposit.change_time }}</td>
+            <td>{{ deposit.phone }}</td>
+            <td>{{ deposit.pay_sum }}</td>
+            <td class="centered">{{ deposit.input_transaction }}</td>
+            <td>{{ deposit.get_status_display }}</td>
+            <td>{{ deposit.pay_screen }}</td>
+            <td>{{ deposit.confirmed_incoming }}</td>
+            <td><a href="{% url 'deposit:deposit_edit' deposit.id %}">Изменить</a></td>
+         </tr>
+         {% endfor %}
+     </tbody>
    </table>
    {% include 'includes/paginator.html' %}
 
