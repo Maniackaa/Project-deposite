@@ -44,6 +44,11 @@ class DepositEditForm(forms.ModelForm):
     # pay_screen = forms.ImageField()
     confirmed_incoming = forms.ModelChoiceField(queryset=Incoming.objects.all(), blank=True, required=False)
 
+    # def __init__(self, *args, **kwargs):
+    #
+    #     super().__init__(*args, **kwargs)
+    #     self.fields['confirmed_incoming'].initial = 0
+
     class Meta:
         model = Deposit
         fields = ('input_transaction', 'pay_sum', 'phone', 'uid', 'confirmed_incoming')

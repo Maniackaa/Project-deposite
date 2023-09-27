@@ -128,8 +128,8 @@ def deposit_status(request, uid):
     return render(request, template_name=template, context=context)
 
 
-def make_page_obj(request, posts, numbers_of_posts=10):
-    paginator = Paginator(posts, numbers_of_posts)
+def make_page_obj(request, objects, numbers_of_posts=10):
+    paginator = Paginator(objects, numbers_of_posts)
     page_number = request.GET.get('page')
     return paginator.get_page(page_number)
 
@@ -150,23 +150,24 @@ def deposits_list_pending(request):
 
 def deposit_edit(request, pk):
     deposit = get_object_or_404(Deposit, pk=pk)
-    print(deposit)
-    form = DepositEditForm(request.POST or None, files=request.FILES, instance=deposit)
     template = 'deposit/deposit_edit.html'
+    form = DepositEditForm(data=request.POST or None, files=request.FILES or None,
+                           instance=deposit,
+                           initial={'confirmed_incoming': deposit.confirmed_incoming}
+                           )
     incomings = Incoming.objects.all()
     if request.method == 'POST':
-        if form.is_valid():
+        if form.is_valid() and form.has_changed():
             form.save()
             print('yes')
             context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, incomings)}
             # context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, deposits)}
-            # return render(request, template_name=template, context=context)
-            return redirect('deposit:deposits')
+            return render(request, template_name=template, context=context)
+            # return redirect('deposit:deposits', context)
         else:
             print('no')
             print(form.errors)
             # form = DepositEditForm(instance=deposit, files=request.FILES)
-            template = 'deposit/deposit_edit.html'
             context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, incomings)}
             # context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, deposits)}
             return render(request, template_name=template, context=context)

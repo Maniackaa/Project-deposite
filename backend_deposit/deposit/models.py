@@ -51,7 +51,7 @@ class Deposit(models.Model):
     pay_screen = models.ImageField(upload_to='pay_screens/',
                                    verbose_name='Чек об оплате', null=True, blank=True, help_text='Скриншот чека')
     confirmed_incoming = models.OneToOneField(Incoming, null=True, blank=True, on_delete=models.SET_NULL,
-                                              help_text='Подтвержденный чек')
+                                              help_text='Подтвержденный чек', related_name='incoming')
 
     def __str__(self):
         string = f'Deposit {self.id}. {self.input_transaction}, pay: {self.pay_sum}, pay_screen: {self.pay_screen}'
