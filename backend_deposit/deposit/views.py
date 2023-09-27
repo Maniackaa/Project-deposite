@@ -128,7 +128,7 @@ def deposit_status(request, uid):
     return render(request, template_name=template, context=context)
 
 
-def make_page_obj(request, objects, numbers_of_posts=10):
+def make_page_obj(request, objects, numbers_of_posts=100):
     paginator = Paginator(objects, numbers_of_posts)
     page_number = request.GET.get('page')
     return paginator.get_page(page_number)
