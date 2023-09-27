@@ -154,18 +154,17 @@ def deposit_edit(request, pk):
     form = DepositEditForm(request.POST or None, files=request.FILES, instance=deposit)
     template = 'deposit/deposit_edit.html'
     incomings = Incoming.objects.all()
-
     if request.method == 'POST':
         if form.is_valid():
             form.save()
             print('yes')
             context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, incomings)}
             # context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, deposits)}
-            return render(request, template_name=template, context=context)
+            # return render(request, template_name=template, context=context)
+            return redirect('deposit:deposits')
         else:
             print('no')
             print(form.errors)
-            print(form)
             # form = DepositEditForm(instance=deposit, files=request.FILES)
             template = 'deposit/deposit_edit.html'
             context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, incomings)}

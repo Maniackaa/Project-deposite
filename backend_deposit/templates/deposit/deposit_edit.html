@@ -51,8 +51,7 @@
        <th>Сумма</th>
        <th>Баланс</th>
        <th>Транзакция с чека</th>
-       <th>Шаблон</th>
-       <th>Станция</th>
+
        <th>Чек</th>
      </thead>
      {% for incoming in  page_obj %}
@@ -66,9 +65,8 @@
         <td >{{ incoming.pay }}</td>
         <td>{{ incoming.balance }}</td>
         <td>{{ incoming.transaction }}</td>
-        <td>{{ incoming.type }}</td>
-        <td>{{ incoming.worker }}</td>
-        <td>{{ incoming.image }}</td>
+
+        <td><a href="{{ MEDIA_URL }}{{ incoming.image.url }}">Чек</a></td>
      </tr>
      {% endfor %}
     </table>
