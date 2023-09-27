@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Редактирование депозита{% endblock %}
+
+
+{% block content %}
+  <div class="d-flex p-3 ">
+    <div class="p-2 bg-light">
+        <p>Редактирование депозита № {{deposit.id}}.<br>Создан:  {{deposit.register_time}}. Последнее изменение: {{deposit.change_time}}.</p>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" action="{% url 'deposit:deposit_edit'  deposit.id %}">
+              {% csrf_token %}
+              {% include 'includes/form_fields.html' %}
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                  Редактировать
+                </button>
+              </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="p-2 bg-light">
+      {% if deposit.pay_screen %}
+        Чек отправителя:
+        <img class="img-thumbnail"  src="/media/{{deposit.pay_screen}}" width="300" height="800">
+      {% else %}
+        Скриншот отсутствует
+      {% endif %}
+    </div>
+    <div class="p-2 bg-light">
+      {% if deposit.confirmed_incoming %}
+        Наш чек:
+        <img class="img-thumbnail"  src="/media/{{deposit.confirmed_incoming.image}}" width="300" height="800">
+      {% else %}
+        Скриншот отсутствует
+      {% endif %}
+    </div>
+
+  </div>
+
+  <span>
+    {% include 'includes/paginator.html' %}
+
+    <table class="table table-sm table-light">
+     <thead>
+       <th>id</th>
+       <th>Дата регистрации</th>
+       <th>Дата на чеке</th>
+       <th>Получатель</th>
+       <th>Отправитель</th>
+       <th>Сумма</th>
+       <th>Баланс</th>
+       <th>Транзакция введенная</th>
+       <th>Шаблон</th>
+       <th>Станция</th>
+       <th>Чек</th>
+     </thead>
+     {% for incoming in  page_obj %}
+
+     <tr>
+        <td>{{ incoming.id }}</td>
+        <td>{{ incoming.register_date }}</td>
+         <td>{{ incoming.response_date }}</td>
+        <td>{{ incoming.recipient }}</td>
+        <td>{{ incoming.sender }}</td>
+        <td>{{ incoming.pay }}</td>
+        <td>{{ incoming.balance }}</td>
+        <td>{{ incoming.transaction }}</td>
+        <td>{{ incoming.type }}</td>
+         <td>{{ incoming.worker }}</td>
+         <td>{{ incoming.image }}</td>
+     </tr>
+     {% endfor %}
+    </table>
+
+
+  </span>
+
+{% endblock %}
+
+

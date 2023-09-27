@@ -3,7 +3,7 @@ from django.urls import path, include
 
 from backend_deposit import settings
 from . import views
-from .views import ShowDeposit, deposits_list, deposits_list_pending
+from .views import ShowDeposit, deposits_list, deposits_list_pending, deposit_edit
 
 app_name = 'deposit'
 
@@ -21,7 +21,7 @@ urlpatterns = [
     path('deposits_pending/', deposits_list_pending, name='deposits_pending'),
     # path(r'^page(?P<page>\d+)/$', DepositList.as_view(), name='deposits'),
 
-    path('deposits/<int:pk>', ShowDeposit.as_view(), name='deposit'),
+    path('deposits/<int:pk>/', deposit_edit, name='deposit_edit'),
 
 
 ]

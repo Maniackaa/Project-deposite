@@ -27,7 +27,7 @@ class Incoming(models.Model):
     worker = models.CharField(max_length=50, null=True)
     image = models.ImageField(upload_to='screens/',
                               verbose_name='скрин', null=True, blank=True)
-    confirmed_deposit = models.OneToOneField('Deposit', null=True, on_delete=models.SET_NULL)
+    confirmed_deposit = models.OneToOneField('Deposit', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         string = f'Incoming {self.id} {self.transaction}, pay: {self.pay}'
@@ -50,7 +50,8 @@ class Deposit(models.Model):
                                   ('approved', 'Подтвержден')])
     pay_screen = models.ImageField(upload_to='pay_screens/',
                                    verbose_name='Чек об оплате', null=True, blank=True, help_text='Скриншот чека')
-    confirmed_incoming = models.OneToOneField(Incoming, null=True, blank=True, on_delete=models.SET_NULL)
+    confirmed_incoming = models.OneToOneField(Incoming, null=True, blank=True, on_delete=models.SET_NULL,
+                                              help_text='Подтвержденный чек')
 
     def __str__(self):
         string = f'Deposit {self.id}. {self.input_transaction}, pay: {self.pay_sum}, pay_screen: {self.pay_screen}'

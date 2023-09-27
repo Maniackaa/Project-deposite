@@ -17,7 +17,7 @@ from rest_framework.decorators import api_view
 from rest_framework.request import Request
 
 
-from deposit.forms import DepositForm, DepositImageForm, DepositTransactionForm
+from deposit.forms import DepositForm, DepositImageForm, DepositTransactionForm, DepositEditForm
 from deposit.func import img_path_to_str
 from deposit.models import BadScreen, Incoming, Deposit
 from deposit.screen_response import screen_text_to_pay
@@ -128,20 +128,6 @@ def deposit_status(request, uid):
     return render(request, template_name=template, context=context)
 
 
-# class DepositList(ListView):
-#     model = Deposit
-#     paginate_by = 10
-#     context_object_name = 'posts'
-#     template_name = 'deposit/deposit_list.html'
-#
-#     # @method_decorator(login_required)
-#     # def dispatch(self, request, *args, **kwargs):
-#     #     return super(DepositList, self).dispatch(request, *args, **kwargs)
-#
-#     def get_queryset(self):
-#         return Deposit.objects.filter()
-
-
 def make_page_obj(request, posts, numbers_of_posts=10):
     paginator = Paginator(posts, numbers_of_posts)
     page_number = request.GET.get('page')
@@ -162,9 +148,37 @@ def deposits_list_pending(request):
     return render(request, template, context)
 
 
+def deposit_edit(request, pk):
+    deposit = get_object_or_404(Deposit, pk=pk)
+    print(deposit)
+    form = DepositEditForm(request.POST or None, files=request.FILES, instance=deposit)
+    template = 'deposit/deposit_edit.html'
+    incomings = Incoming.objects.all()
+
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            print('yes')
+            context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, incomings)}
+            # context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, deposits)}
+            return render(request, template_name=template, context=context)
+        else:
+            print('no')
+            print(form.errors)
+            print(form)
+            # form = DepositEditForm(instance=deposit, files=request.FILES)
+            template = 'deposit/deposit_edit.html'
+            context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, incomings)}
+            # context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, deposits)}
+            return render(request, template_name=template, context=context)
+    print('xxxxxxxxxxx')
+    context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, incomings)}
+    return render(request, template, context)
+
+
 class ShowDeposit(DetailView):
     model = Deposit
-    template_name = 'deposit/deposit.html'
+    template_name = 'deposit/deposit_edit.html'
 
 
 
