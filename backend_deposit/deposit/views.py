@@ -3,10 +3,14 @@ import logging
 import time
 import uuid
 
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.utils.http import urlencode
+from django.views.generic import ListView, DetailView
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -122,6 +126,57 @@ def deposit_status(request, uid):
     logger.debug(f'has_changed: {form.has_changed()}')
 
     return render(request, template_name=template, context=context)
+
+
+# class DepositList(ListView):
+#     model = Deposit
+#     paginate_by = 10
+#     context_object_name = 'posts'
+#     template_name = 'deposit/deposit_list.html'
+#
+#     # @method_decorator(login_required)
+#     # def dispatch(self, request, *args, **kwargs):
+#     #     return super(DepositList, self).dispatch(request, *args, **kwargs)
+#
+#     def get_queryset(self):
+#         return Deposit.objects.filter()
+
+
+def make_page_obj(request, posts, numbers_of_posts=10):
+    paginator = Paginator(posts, numbers_of_posts)
+    page_number = request.GET.get('page')
+    return paginator.get_page(page_number)
+
+
+def deposits_list(request):
+    template = 'deposit/deposit_list.html'
+    deposits = Deposit.objects.order_by('-id').all()
+    context = {'page_obj': make_page_obj(request, deposits)}
+    return render(request, template, context)
+
+
+def deposits_list_pending(request):
+    template = 'deposit/deposit_list.html'
+    deposits = Deposit.objects.order_by('-id').filter(status='pending').all()
+    context = {'page_obj': make_page_obj(request, deposits)}
+    return render(request, template, context)
+
+
+class ShowDeposit(DetailView):
+    model = Deposit
+    template_name = 'deposit/deposit.html'
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @api_view(['POST'])

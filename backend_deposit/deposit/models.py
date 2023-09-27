@@ -8,6 +8,7 @@ from django.db.transaction import atomic
 from django.dispatch import receiver
 
 from django.db.models.signals import post_delete, post_save
+from django.utils.html import format_html
 
 from backend_deposit.settings import TZ
 
@@ -42,7 +43,11 @@ class Deposit(models.Model):
     input_transaction = models.IntegerField('Номер транзакции из чека',
                                             null=True, blank=True, help_text='Номер транзакции из чека',
                                             validators=[MinValueValidator(50000000), MaxValueValidator(99999999)])
-    status = models.CharField('Статус депозита', default='pending')
+    status = models.CharField('Статус депозита',
+                              default='pending',
+                              choices=[
+                                  ('pending', 'На рассмотрении'),
+                                  ('approved', 'Подтвержден')])
     pay_screen = models.ImageField(upload_to='pay_screens/',
                                    verbose_name='Чек об оплате', null=True, blank=True, help_text='Скриншот чека')
     confirmed_incoming = models.OneToOneField(Incoming, null=True, blank=True, on_delete=models.SET_NULL)
@@ -60,6 +65,9 @@ class BadScreen(models.Model):
     worker = models.CharField(max_length=50, null=True)
     transaction = models.IntegerField('Транзакция', null=True, unique=True, blank=True)
     type = models.CharField(max_length=20, default='unknown')
+
+    def size(self):
+        return f'{self.image.size // 1024} Кб' or None
 
 
 @receiver(post_delete, sender=BadScreen)

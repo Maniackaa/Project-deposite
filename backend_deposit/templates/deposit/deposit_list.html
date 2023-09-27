@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Список депозитов{% endblock %}
+
+
+{% block content %}
+{% include 'includes/switcher.html' %}
+   <table class="table table-sm table-light">
+     <thead>
+       <th>id</th>
+       <th>Телефон</th>
+       <th>Сумма</th>
+       <th>4</th>
+       <th>5</th>
+       <th>6</th>
+       <th>7</th>
+     </thead>
+     {% for deposit in page_obj %}
+     <tr>
+        <td>{{ deposit.id }}</td>
+        <td>{{ deposit.register_time }}</td>
+        <td>{{ deposit.phone }}</td>
+        <td>{{ deposit.pay_sum }}</td>
+        <td>{{ deposit.input_transaction }}</td>
+        <td>{{ deposit.get_status_display }}</td>
+        <td>{{ deposit.confirmed_incoming }}</td>
+     </tr>
+     {% endfor %}
+   </table>
+   {% include 'includes/paginator.html' %}
+
+{% endblock %}
