@@ -43,6 +43,8 @@ class DepositEditForm(forms.ModelForm):
     input_transaction = forms.Field(disabled=True)
     # pay_screen = forms.ImageField()
     confirmed_incoming = forms.ModelChoiceField(queryset=Incoming.objects.all(), blank=True, required=False)
+    status = forms.CharField(widget=forms.HiddenInput, disabled=True)
+
 
     # def __init__(self, *args, **kwargs):
     #
@@ -51,7 +53,7 @@ class DepositEditForm(forms.ModelForm):
 
     class Meta:
         model = Deposit
-        fields = ('input_transaction', 'pay_sum', 'phone', 'uid', 'confirmed_incoming')
+        fields = ('input_transaction', 'pay_sum', 'phone', 'uid', 'confirmed_incoming', )
 
         hidden_fields = ('pay_screen',)
         # help_texts = {'confirmed_incoming': 'Ваш телефон',}

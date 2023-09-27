@@ -30,7 +30,7 @@ class Incoming(models.Model):
     confirmed_deposit = models.OneToOneField('Deposit', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        string = f'Incoming {self.id} {self.transaction}, pay: {self.pay}'
+        string = f'Incoming {self.id} {self.transaction}, pay: {self.pay}, confirmed_deposit: {self.confirmed_deposit.id if self.confirmed_deposit else "-"}'
         return string
 
 
@@ -51,10 +51,10 @@ class Deposit(models.Model):
     pay_screen = models.ImageField(upload_to='pay_screens/',
                                    verbose_name='Чек об оплате', null=True, blank=True, help_text='Скриншот чека')
     confirmed_incoming = models.OneToOneField(Incoming, null=True, blank=True, on_delete=models.SET_NULL,
-                                              help_text='Подтвержденный чек', related_name='incoming')
+                                              help_text='Подтвержденный чек')
 
     def __str__(self):
-        string = f'Deposit {self.id}. {self.input_transaction}, pay: {self.pay_sum}, pay_screen: {self.pay_screen}'
+        string = f'Deposit {self.id}. {self.input_transaction}, pay: {self.pay_sum}, pay_screen: {self.pay_screen} confirmed_incoming: {self.confirmed_incoming.id if self.confirmed_incoming else "-"}'
         return string
 
 
@@ -71,81 +71,81 @@ class BadScreen(models.Model):
         return f'{self.image.size // 1024} Кб' or None
 
 
-@receiver(post_delete, sender=BadScreen)
-def bad_screen_image_delete(sender, instance, **kwargs):
-    if instance.image.name:
-        instance.image.delete(False)
-
-
-@receiver(post_delete, sender=Incoming)
-def screen_image_delete(sender, instance, **kwargs):
-    if instance.image.name:
-        instance.image.delete(False)
-
-
-@receiver(post_save, sender=Incoming)
-def after_save_incoming(sender, instance: Incoming, **kwargs):
-    try:
-        if instance.confirmed_deposit:
-            logger.debug('incoming post_save return')
-            return
-        logger.debug(f'Действие после сохранения корректного скрина: {instance}')
-        pay = instance.pay
-        transaction = instance.transaction
-        transaction_list = [transaction - 1, transaction + 1, transaction + 2]
-        treshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
-        logger.debug(f'Ищем депозиты не позднее чем: {str(treshold)}')
-        deposits = Deposit.objects.filter(
-            status='pending',
-            pay_sum=pay,
-            register_time__gte=treshold,
-            input_transaction__in=transaction_list
-        ).all()
-        logger.debug(f'Найденные deposits: {deposits}')
-        if deposits:
-            deposit = deposits.first()
-            logger.debug(f'Подтверждаем депозит {deposit}')
-            deposit.confirmed_incoming = instance
-            deposit.status = 'confirmed'
-            deposit.save()
-            logger.debug(f'Депозит подтвержден: {deposit}')
-            logger.debug(f'Сохраняем confirmed_deposit: {deposit}')
-            instance.confirmed_deposit = deposit
-            instance.save()
-
-    except Exception as err:
-        logger.error(err, exc_info=True)
-
-
-@transaction.atomic
-@receiver(post_save, sender=Deposit)
-def after_save_deposit(sender, instance: Deposit, **kwargs):
-    try:
-        logger.debug(f'Действие после сохранения депозита: {instance}')
-        logger.debug(f'sender: {sender}')
-        if instance.input_transaction and instance.status == 'pending':
-            treshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
-            logger.debug(f'Ищем скрины не позднее чем: {str(treshold)}')
-            logger.debug(f'input_transaction: {instance.input_transaction}, {type(instance.input_transaction)}')
-            transaction_list = [instance.input_transaction - 1,
-                                instance.input_transaction + 1,
-                                instance.input_transaction + 2]
-            logger.debug(f'transaction_list: {transaction_list}')
-            incomings = Incoming.objects.filter(
-                register_date__gte=treshold,
-                pay=instance.pay_sum,
-                transaction__in=transaction_list,
-                confirmed_deposit=None
-            ).order_by('-id').all()
-            logger.debug(f'Найденные скрины: {incomings}')
-            if incomings:
-                incoming = incomings.first()
-                incoming.confirmed_deposit = instance
-                instance.status = 'approved'
-                incoming.save()
-                instance.save()
-        else:
-            logger.debug('deposit post_save return')
-
-    except Exception as err:
-        logger.error(err, exc_info=True)
+# @receiver(post_delete, sender=BadScreen)
+# def bad_screen_image_delete(sender, instance, **kwargs):
+#     if instance.image.name:
+#         instance.image.delete(False)
+#
+#
+# @receiver(post_delete, sender=Incoming)
+# def screen_image_delete(sender, instance, **kwargs):
+#     if instance.image.name:
+#         instance.image.delete(False)
+#
+#
+# @receiver(post_save, sender=Incoming)
+# def after_save_incoming(sender, instance: Incoming, **kwargs):
+#     try:
+#         if instance.confirmed_deposit:
+#             logger.debug('incoming post_save return')
+#             return
+#         logger.debug(f'Действие после сохранения корректного скрина: {instance}')
+#         pay = instance.pay
+#         transaction = instance.transaction
+#         transaction_list = [transaction - 1, transaction + 1, transaction + 2]
+#         treshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
+#         logger.debug(f'Ищем депозиты не позднее чем: {str(treshold)}')
+#         deposits = Deposit.objects.filter(
+#             status='pending',
+#             pay_sum=pay,
+#             register_time__gte=treshold,
+#             input_transaction__in=transaction_list
+#         ).all()
+#         logger.debug(f'Найденные deposits: {deposits}')
+#         if deposits:
+#             deposit = deposits.first()
+#             logger.debug(f'Подтверждаем депозит {deposit}')
+#             deposit.confirmed_incoming = instance
+#             deposit.status = 'confirmed'
+#             deposit.save()
+#             logger.debug(f'Депозит подтвержден: {deposit}')
+#             logger.debug(f'Сохраняем confirmed_deposit: {deposit}')
+#             instance.confirmed_deposit = deposit
+#             instance.save()
+#
+#     except Exception as err:
+#         logger.error(err, exc_info=True)
+#
+#
+# @transaction.atomic
+# @receiver(post_save, sender=Deposit)
+# def after_save_deposit(sender, instance: Deposit, **kwargs):
+#     try:
+#         logger.debug(f'Действие после сохранения депозита: {instance}')
+#         logger.debug(f'sender: {sender}')
+#         if instance.input_transaction and instance.status == 'pending':
+#             treshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
+#             logger.debug(f'Ищем скрины не позднее чем: {str(treshold)}')
+#             logger.debug(f'input_transaction: {instance.input_transaction}, {type(instance.input_transaction)}')
+#             transaction_list = [instance.input_transaction - 1,
+#                                 instance.input_transaction + 1,
+#                                 instance.input_transaction + 2]
+#             logger.debug(f'transaction_list: {transaction_list}')
+#             incomings = Incoming.objects.filter(
+#                 register_date__gte=treshold,
+#                 pay=instance.pay_sum,
+#                 transaction__in=transaction_list,
+#                 confirmed_deposit=None
+#             ).order_by('-id').all()
+#             logger.debug(f'Найденные скрины: {incomings}')
+#             if incomings:
+#                 incoming = incomings.first()
+#                 incoming.confirmed_deposit = instance
+#                 instance.status = 'approved'
+#                 incoming.save()
+#                 instance.save()
+#         else:
+#             logger.debug('deposit post_save return')
+#
+#     except Exception as err:
+#         logger.error(err, exc_info=True)
