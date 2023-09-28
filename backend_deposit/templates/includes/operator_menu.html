@@ -25,10 +25,10 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
           <a class="nav-link
-            {% if view_name  == 'deposit:deposits' %}
+            {% if view_name  == 'deposit:deposits_pending' %}
               link-danger
             {% endif %}"
-            href="{% url 'deposit:deposits' %}">Список депозитов
+            href="{% url 'deposit:deposits_pending' %}">Список депозитов
           </a>
           </li>
       </ul>
