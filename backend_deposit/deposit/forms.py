@@ -1,11 +1,10 @@
-import datetime
+
 import logging
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import ClearableFileInput
 
-from backend_deposit.settings import TZ
+
 from .models import Deposit, Incoming
 
 logger = logging.getLogger(__name__)
@@ -41,23 +40,25 @@ class DepositEditForm(forms.ModelForm):
     phone = forms.Field(disabled=True)
     pay_sum = forms.Field(disabled=True)
     input_transaction = forms.Field(disabled=True)
-    confirmed_incoming = forms.ModelChoiceField(queryset=Incoming.objects.filter(confirmed_deposit=None).order_by('-id').all(), blank=True, required=False)
+    confirmed_incoming = forms.ModelChoiceField(
+        queryset=None,
+        blank=True,
+        required=False,
+    )
     status = forms.CharField(widget=forms.HiddenInput, disabled=True)
 
-
-    # def __init__(self, *args, **kwargs):
-    #
-    #     super().__init__(*args, **kwargs)
-    #     self.fields['confirmed_incoming'].initial = 0
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        deposit: Deposit = kwargs.get('instance')
+        incoming_id = None
+        if deposit.confirmed_incoming:
+            incoming_id = deposit.confirmed_incoming.id
+        self.fields['confirmed_incoming'].queryset = Incoming.objects.filter(confirmed_deposit=None).order_by('-id') | Incoming.objects.filter(id=incoming_id)
 
     class Meta:
         model = Deposit
         fields = ('input_transaction', 'pay_sum', 'phone', 'uid', 'confirmed_incoming', )
-
         hidden_fields = ('pay_screen',)
-        # help_texts = {'confirmed_incoming': 'Ваш телефон',}
-        # labels = {'confirmed_incoming': 'Ваш телефон',}
-        # labels = {'phone': 'Your phone', 'pay_sum': 'Pay summ (Min: 5 AZN, Max: Unlim)'}
 
 
 class DepositImageForm(forms.ModelForm):

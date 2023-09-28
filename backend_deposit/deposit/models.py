@@ -30,7 +30,7 @@ class Incoming(models.Model):
     confirmed_deposit = models.OneToOneField('Deposit', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        string = f'Incoming {self.id} {self.transaction}, pay: {self.pay}, confirmed_deposit: {self.confirmed_deposit.id if self.confirmed_deposit else "-"}'
+        string = f'Чек {self.id}. {self.transaction}. Сумма: {self.pay}. Депозит: {self.confirmed_deposit.id if self.confirmed_deposit else "-"}'
         return string
 
 
@@ -54,7 +54,7 @@ class Deposit(models.Model):
                                               help_text='Подтвержденный чек')
 
     def __str__(self):
-        string = f'Deposit {self.id}. {self.input_transaction}, pay: {self.pay_sum}, pay_screen: {self.pay_screen} confirmed_incoming: {self.confirmed_incoming.id if self.confirmed_incoming else "-"}'
+        string = f'Депозит {self.id}. {self.input_transaction}. Сумма: {self.pay_sum}. Pay_screen: {self.pay_screen}. Наш чек: {self.confirmed_incoming.id if self.confirmed_incoming else "-"}'
         return string
 
 

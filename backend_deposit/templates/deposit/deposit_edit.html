@@ -3,6 +3,7 @@
 
 
 {% block content %}
+{% include 'includes/operator_menu.html' %}
   <div class="d-flex p-3 col-12">
     <div class="p-2 bg-light col-4">
         <p>Редактирование депозита № {{deposit.id}}.<br>Создан:  {{deposit.register_time}}. Последнее изменение: {{deposit.change_time}}.</p>
@@ -23,7 +24,7 @@
             <p>Чек отправителя:</p>
             <img class="img-thumbnail"  src="/media/{{deposit.pay_screen}}" width="300" height="800">
           {% else %}
-            Чек отсутствует
+            Чек отправителя отсутствует
           {% endif %}
           </span>
           <span class="col-6">
@@ -31,13 +32,13 @@
             <p>Наш чек:</p>
             <img class="img-thumbnail"  src="/media/{{deposit.confirmed_incoming.image}}" width="300" height="800">
           {% else %}
-            Чек отсутствует
+            Наш чек отсутствует
           {% endif %}
           </span>
         </div>
     </div>
 
-<span class="col-8">
+  <span class="col-8">
     {% include 'includes/paginator.html' %}
 
     <table class="table table-sm table-light">
@@ -68,8 +69,7 @@
      </tr>
      {% endfor %}
     </table>
-
-
+    {% include 'includes/paginator.html' %}
   </span>
 
   </div>

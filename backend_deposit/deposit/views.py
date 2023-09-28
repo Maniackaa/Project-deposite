@@ -5,6 +5,7 @@ import uuid
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -151,32 +152,22 @@ def deposits_list_pending(request):
 def deposit_edit(request, pk):
     deposit_from_pk = get_object_or_404(Deposit, pk=pk)
     template = 'deposit/deposit_edit.html'
+    incomings = Incoming.objects.filter(confirmed_deposit=None).order_by('-id').all()
     form = DepositEditForm(data=request.POST or None, files=request.FILES or None,
                            instance=deposit_from_pk,
                            initial={'confirmed_incoming': deposit_from_pk.confirmed_incoming,
-                                    'status': deposit_from_pk.status}
-                           )
-    # print('old_deposit_incoming:', deposit_from_pk.confirmed_incoming)
-    incomings = Incoming.objects.filter(confirmed_deposit=None).order_by('-id').all()
-    old_confirmed_incoming = deposit_from_pk.confirmed_incoming
-    if old_confirmed_incoming:
-        old_confirmed_incoming_id = old_confirmed_incoming.id
-    else:
-        old_confirmed_incoming_id = None
-    print('old_confirmed_incoming_id:', old_confirmed_incoming_id)
-    new_confirmed_incoming_id = request.POST.get('confirmed_incoming') or None
-    print('new_confirmed_incoming_id:', new_confirmed_incoming_id)
+                                    'status': deposit_from_pk.status})
     if request.method == 'POST':
-    #     old_deposit = request.POST.get('deposit')
-        if form.is_valid() and form.has_changed():
-    #         print('yes')
+        old_confirmed_incoming = deposit_from_pk.confirmed_incoming
+        if old_confirmed_incoming:
+            old_confirmed_incoming_id = old_confirmed_incoming.id
+        else:
+            old_confirmed_incoming_id = None
+        new_confirmed_incoming_id = request.POST.get('confirmed_incoming') or None
 
-    #         print('old-new', old_deposit.confirmed_incoming, new_deposit.confirmed_incoming)
-    #
-    #         new_confirmed_incoming: Incoming = form.cleaned_data['confirmed_incoming']
-    #         print('new_confirmed_incoming', new_confirmed_incoming)
+        if form.is_valid() and form.has_changed():
             if old_confirmed_incoming_id and new_confirmed_incoming_id:
-                print('ветка 1. Чек меняется с одного на другое')
+                # 'ветка 1. Чек меняется с одного на другое'
                 saved_deposit: Deposit = form.save()
                 old_incoming = Incoming.objects.get(id=old_confirmed_incoming_id)
                 old_incoming.confirmed_deposit = None
@@ -185,38 +176,25 @@ def deposit_edit(request, pk):
                 new_incoming.confirmed_deposit = saved_deposit
                 new_incoming.save()
             elif new_confirmed_incoming_id and not old_confirmed_incoming_id:
-                print('ветка 2. Было пусто стало новый чек')
+                # 'ветка 2. Было пусто стало новый чек'
                 saved_deposit = form.save()
                 saved_deposit.status = 'approved'
                 saved_deposit.save()
                 incoming = Incoming.objects.get(id=new_confirmed_incoming_id)
                 incoming.confirmed_deposit = saved_deposit
                 incoming.save()
-            elif not new_confirmed_incoming_id:
-                print('ветка 3. Удален чек')
+            else:
+                # 'ветка 3. Удален чек'
                 saved_deposit = form.save()
                 saved_deposit.status = 'pending'
                 saved_deposit.save()
                 if old_confirmed_incoming:
                     old_confirmed_incoming.confirmed_deposit = None
                 old_confirmed_incoming.save()
-
-    #             old_incoming = new_deposit.confirmed_incoming
-    #             if old_incoming:
-    #                 old_deposit.confirmed_incoming = None
-    #                 old_deposit.save()
-    #             new_deposit.save()
-            form.save()
-            context = {'deposit': deposit_from_pk, 'form': form, 'page_obj': make_page_obj(request, incomings)}
-    #         return render(request, template_name=template, context=context)
-    #     else:
-    #         print('no')
-    #         print(form.errors)
-    #         # form = DepositEditForm(instance=deposit, files=request.FILES)
-    #         context = {'deposit': old_deposit, 'form': form, 'page_obj': make_page_obj(request, incomings)}
-    #         # context = {'deposit': deposit, 'form': form, 'page_obj': make_page_obj(request, deposits)}
-    #         return render(request, template_name=template, context=context)
-    # print('xxxxxxxxxxx')
+            # form = DepositEditForm(data=request.POST, files=request.FILES or None,
+            form = DepositEditForm(instance=deposit_from_pk)
+            context = {'deposit': saved_deposit, 'form': form, 'page_obj': make_page_obj(request, incomings)}
+            return render(request, template_name=template, context=context)
     context = {'deposit': deposit_from_pk, 'form': form, 'page_obj': make_page_obj(request, incomings)}
     return render(request, template, context)
 
