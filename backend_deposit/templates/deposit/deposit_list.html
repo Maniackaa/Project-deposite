@@ -24,8 +24,8 @@
          {% for deposit in page_obj %}
          <tr>
             <td>{{ deposit.id }}</td>
-            <td>{{ deposit.register_time }}</td>
-            <td class="centered">{{ deposit.change_time }}</td>
+            <td>{{ deposit.register_time|date:"d.m.Y H:i" }}</td>
+            <td>{{ deposit.change_time|date:"d.m.Y H:i" }}</td>
             <td>{{ deposit.phone }}</td>
             <td>{{ deposit.pay_sum }}</td>
             <td class="centered">{{ deposit.input_transaction }}</td>

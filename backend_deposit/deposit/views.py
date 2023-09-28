@@ -226,22 +226,10 @@ class ShowDeposit(DetailView):
     template_name = 'deposit/deposit_edit.html'
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 @api_view(['POST'])
 def screen(request: Request):
     """
-    Прием сриншота
+    Прием скриншота
     """
     try:
         host = request.META["HTTP_HOST"]  # получаем адрес сервера
