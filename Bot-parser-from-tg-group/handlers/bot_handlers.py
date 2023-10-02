@@ -71,9 +71,15 @@ async def sms_receiver(message: Message, bot: Bot):
         if text_sms_type:
             logger.info(f'Сохраняем в базу {responsed_pay}')
             addet = add_pay_to_db(responsed_pay)
-            if addet:
+            if addet is True:
                 print('Добавлено в базу')
                 await message.reply(f'Обработано. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+            elif addet == 'duplicate':
+                logger.debug('Дупликат смс')
+                await message.reply(
+                    f'Обработано. Дубликат {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+            else:
+                await message.reply('Неизвестная ошибка')
         else:
             await message.reply('Неизвестный шаблон!')
             logger.info(f'Добавляем в нераспознанное:\n {message.text}')

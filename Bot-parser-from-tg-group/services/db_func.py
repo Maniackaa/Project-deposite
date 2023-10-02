@@ -37,7 +37,9 @@ def add_pay_to_db(pay: dict):
             session.commit()
             return True
     except IntegrityError as err:
+        logger.error(err)
         logger.warning(f'Транзакция уже есть')
+        return 'duplicate'
     except Exception as err:
         logger.debug(f'Ошибка при добавлении в базу', exc_info=True)
         raise err

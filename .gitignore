@@ -5,6 +5,7 @@ __pycache__/
 credentials.json
 # C extensions
 *.so
+.idea
 
 # Distribution / packaging
 .Python

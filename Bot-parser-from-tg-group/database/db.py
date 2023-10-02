@@ -20,7 +20,7 @@ err_log = logging.getLogger('errors_logger')
 metadata = MetaData()
 db_url = f"postgresql+psycopg2://{conf.db.db_user}:{conf.db.db_password}@{conf.db.db_host}:{conf.db.db_port}/{conf.db.database}"
 engine = create_engine(db_url, echo=False)
-
+from sqlalchemy_utils.functions import database_exists, create_database
 
 Session = sessionmaker(bind=engine)
 
@@ -31,6 +31,7 @@ class Base(DeclarativeBase):
 
 class Incoming(Base):
     __tablename__ = 'deposit_incoming'
+    __table_args__ = (UniqueConstraint("response_date", "pay", "sender", name="unique_sms"),)
     id: Mapped[int] = mapped_column(primary_key=True,
                                     autoincrement=True,
                                     comment='Первичный ключ')
@@ -45,6 +46,7 @@ class Incoming(Base):
     type: Mapped[str] = mapped_column(String(20), default='unknown')
     message_url: Mapped[str] = mapped_column(String(100), nullable=True)
 
+
     def __repr__(self):
         return f'{self.id}. {self.register_date}'
 
@@ -57,6 +59,9 @@ class TrashIncoming(Base):
     register_date: Mapped[time] = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.datetime.now(tz=tz))
     text: Mapped[str] = mapped_column(Text())
 
+
+if not database_exists(db_url):
+    create_database(db_url)
 
 Base.metadata.create_all(engine)
 

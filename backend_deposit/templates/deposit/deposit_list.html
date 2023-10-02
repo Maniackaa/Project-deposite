@@ -29,15 +29,14 @@
             <td>{{ deposit.change_time|date:"d.m.Y H:i" }}</td>
             <td>{{ deposit.phone }}</td>
             <td>{{ deposit.pay_sum }}</td>
-            <td class="centered">{{ deposit.input_transaction }}</td>
+            <td class="centered">{{ deposit.input_transaction|default_if_none:"--" }}</td>
             {% if deposit.status == 'pending' %}
               <td class="table-danger">{{ deposit.get_status_display }}</td>
             {% else %}
               <td class="table-success">{{ deposit.get_status_display }}</td>
             {% endif %}
-
             <td>{{ deposit.pay_screen }}</td>
-            <td>{{ deposit.confirmed_incoming }}</td>
+            <td>{{ deposit.confirmed_incoming|default_if_none:"--" }}</td>
             <td><a href="{% url 'deposit:deposit_edit' deposit.id %}">Изменить</a></td>
          </tr>
          {% endfor %}
