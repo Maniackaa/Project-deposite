@@ -5,6 +5,7 @@ import numpy as np
 import pytesseract
 
 from backend_deposit import settings
+from deposit.models import Deposit, Incoming
 
 TZ = settings.TZ
 logger = logging.getLogger(__name__)
@@ -115,3 +116,76 @@ def response_m10_short(fields, groups) -> dict[str, str | float]:
     except Exception as err:
         logger.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
         raise err
+
+
+def make_after_incoming_save(instance):
+    """
+    Действия после сохранения скрина.
+    Находит депозит не ранее 10 минут с такой-же суммой и транзакцией [-1, -1, +1]
+    """
+
+    try:
+        if instance.confirmed_deposit:
+            logger.debug('incoming post_save return')
+            return
+        logger.debug(f'Действие после сохранения корректного скрина: {instance}')
+        pay = instance.pay
+        transaction = instance.transaction
+        transaction_list = [transaction - 1, transaction + 1, transaction - 2]
+        threshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
+        logger.debug(f'Ищем депозиты не позднее чем: {str(threshold)}')
+        deposits = Deposit.objects.filter(
+            status='pending',
+            pay_sum=pay,
+            register_time__gte=threshold,
+            input_transaction__in=transaction_list
+        ).all()
+        logger.debug(f'Найденные deposits: {deposits}')
+        if deposits:
+            deposit = deposits.first()
+            logger.debug(f'Подтверждаем депозит {deposit}')
+            deposit.confirmed_incoming = instance
+            deposit.status = 'confirmed'
+            deposit.save()
+            logger.debug(f'Депозит подтвержден: {deposit}')
+            logger.debug(f'Сохраняем confirmed_deposit: {deposit}')
+            instance.confirmed_deposit = deposit
+            instance.save()
+
+    except Exception as err:
+        logger.error(err, exc_info=True)
+
+
+def make_after_save_deposit(instance):
+    """
+    Действия после сохранения скрина.
+    Находит депозит не ранее 10 минут с такой-же суммой и транзакцией [-2, -1, +1]
+    """
+    try:
+        logger.debug(f'Действие после сохранения депозита: {instance}')
+        if instance.input_transaction and instance.status == 'pending':
+            threshold = datetime.datetime.now(tz=TZ) - datetime.timedelta(minutes=10)
+            logger.debug(f'Ищем скрины не ранее чем: {str(threshold)}')
+            logger.debug(f'input_transaction: {instance.input_transaction}, {type(instance.input_transaction)}')
+            transaction_list = [instance.input_transaction - 1,
+                                instance.input_transaction + 1,
+                                instance.input_transaction + 2]
+            logger.debug(f'transaction_list: {transaction_list}')
+            incomings = Incoming.objects.filter(
+                register_date__gte=threshold,
+                pay=instance.pay_sum,
+                transaction__in=transaction_list,
+                confirmed_deposit=None
+            ).order_by('-id').all()
+            logger.debug(f'Найденные скрины: {incomings}')
+            if incomings:
+                incoming = incomings.first()
+                incoming.confirmed_deposit = instance
+                instance.status = 'approved'
+                incoming.save()
+                instance.save()
+        else:
+            logger.debug('deposit post_save return')
+
+    except Exception as err:
+        logger.error(err, exc_info=True)

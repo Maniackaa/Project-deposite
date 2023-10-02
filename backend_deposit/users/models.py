@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -16,6 +18,8 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
+
+    # id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
 
     first_name = models.CharField(
         verbose_name="Имя",

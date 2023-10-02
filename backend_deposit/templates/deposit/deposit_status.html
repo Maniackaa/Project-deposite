@@ -3,7 +3,7 @@
 {% block title %}Статус депозита{% endblock %}
 {% block content %}
 
-      <div class="col-md-4">
+      <div class="col-md-6 mx-auto">
         <div class="card">
           <div class="card-header">
             <div class="card-body ">
@@ -27,7 +27,7 @@
               <form method="post" enctype="multipart/form-data" action="{% url 'deposit:status' deposit.uid %}">
                 {% csrf_token %}
 
-                {{ form|crispy }}
+                {{ form }}<br>
               <span  class="">
                 <br><button type="submit" class="btn btn-primary pull-left">
                   Сохранить

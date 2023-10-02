@@ -71,16 +71,16 @@ class BadScreen(models.Model):
         return f'{self.image.size // 1024} Кб' or None
 
 
-# @receiver(post_delete, sender=BadScreen)
-# def bad_screen_image_delete(sender, instance, **kwargs):
-#     if instance.image.name:
-#         instance.image.delete(False)
-#
-#
-# @receiver(post_delete, sender=Incoming)
-# def screen_image_delete(sender, instance, **kwargs):
-#     if instance.image.name:
-#         instance.image.delete(False)
+@receiver(post_delete, sender=BadScreen)
+def bad_screen_image_delete(sender, instance, **kwargs):
+    if instance.image.name:
+        instance.image.delete(False)
+
+
+@receiver(post_delete, sender=Incoming)
+def screen_image_delete(sender, instance, **kwargs):
+    if instance.image.name:
+        instance.image.delete(False)
 #
 #
 # @receiver(post_save, sender=Incoming)

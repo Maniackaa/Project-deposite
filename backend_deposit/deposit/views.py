@@ -3,6 +3,8 @@ import logging
 import time
 import uuid
 
+from django.conf import settings
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -19,7 +21,7 @@ from rest_framework.request import Request
 
 
 from deposit.forms import DepositForm, DepositImageForm, DepositTransactionForm, DepositEditForm
-from deposit.func import img_path_to_str
+from deposit.func import img_path_to_str, make_after_incoming_save, make_after_save_deposit
 from deposit.models import BadScreen, Incoming, Deposit
 from deposit.screen_response import screen_text_to_pay
 from deposit.serializers import IncomingSerializer
@@ -56,9 +58,6 @@ def index(request, *args, **kwargs):
                 template = 'deposit/index.html'
                 context = {'form': form}
                 return render(request, template_name=template, context=context)
-
-        logger.debug(f'index GET ')
-
         context = {'form': form}
         template = 'deposit/index.html'
         return render(request, template_name=template, context=context)
@@ -98,7 +97,8 @@ def deposit_created(request):
         deposit.input_transaction = input_transaction
         form = DepositTransactionForm(request.POST, files=request.FILES, instance=deposit)
         if form.is_valid():
-            form.save()
+            deposit = form.save()
+            make_after_save_deposit(deposit)
         template = 'deposit/deposit_created.html'
 
         context = {'form': form, 'deposit': deposit, 'pay_screen': None}
@@ -135,6 +135,7 @@ def make_page_obj(request, objects, numbers_of_posts=100):
     return paginator.get_page(page_number)
 
 
+@staff_member_required(login_url='users:login')
 def deposits_list(request):
     template = 'deposit/deposit_list.html'
     deposits = Deposit.objects.order_by('-id').all()
@@ -142,6 +143,7 @@ def deposits_list(request):
     return render(request, template, context)
 
 
+@staff_member_required(login_url='users:login')
 def deposits_list_pending(request):
     template = 'deposit/deposit_list.html'
     deposits = Deposit.objects.order_by('-id').filter(status='pending').all()
@@ -149,6 +151,7 @@ def deposits_list_pending(request):
     return render(request, template, context)
 
 
+@staff_member_required(login_url='users:login')
 def deposit_edit(request, pk):
     deposit_from_pk = get_object_or_404(Deposit, pk=pk)
     template = 'deposit/deposit_edit.html'
@@ -166,9 +169,9 @@ def deposit_edit(request, pk):
         new_confirmed_incoming_id = request.POST.get('confirmed_incoming') or None
 
         if form.is_valid() and form.has_changed():
+            saved_deposit = form.save()
             if old_confirmed_incoming_id and new_confirmed_incoming_id:
                 # 'ветка 1. Чек меняется с одного на другое'
-                saved_deposit: Deposit = form.save()
                 old_incoming = Incoming.objects.get(id=old_confirmed_incoming_id)
                 old_incoming.confirmed_deposit = None
                 old_incoming.save()
@@ -177,7 +180,6 @@ def deposit_edit(request, pk):
                 new_incoming.save()
             elif new_confirmed_incoming_id and not old_confirmed_incoming_id:
                 # 'ветка 2. Было пусто стало новый чек'
-                saved_deposit = form.save()
                 saved_deposit.status = 'approved'
                 saved_deposit.save()
                 incoming = Incoming.objects.get(id=new_confirmed_incoming_id)
@@ -185,7 +187,6 @@ def deposit_edit(request, pk):
                 incoming.save()
             else:
                 # 'ветка 3. Удален чек'
-                saved_deposit = form.save()
                 saved_deposit.status = 'pending'
                 saved_deposit.save()
                 if old_confirmed_incoming:
@@ -239,28 +240,39 @@ def screen(request: Request):
 
         pay_status = pay.pop('status')
         errors = pay.pop('errors')
+
         if errors:
             logger.warning(f'errors: {errors}')
         sms_type = pay.get('type')
 
+        if not sms_type:
+            # Действие если скрин не по известному шаблону
+            logger.debug('скрин не по известному шаблону')
+            BadScreen.objects.create(name=name, worker=worker, image=image)
+            logger.debug(f'BadScreen сохранен')
+            logger.debug(f'Возвращаем статус 200: not recognize')
+            return HttpResponse(status=status.HTTP_200_OK,
+                                reason='not recognize',
+                                charset='utf-8')
+
         # Если шаблон найден:
         if sms_type:
-            transaction = pay.get('transaction')
-            is_incoming_duplicate = Incoming.objects.filter(transaction=transaction)
+            transaction_m10 = pay.get('transaction')
+            is_incoming_duplicate = Incoming.objects.filter(transaction=transaction_m10)
             # Если дубликат:
             if is_incoming_duplicate:
                 return HttpResponse(status=status.HTTP_200_OK,
                                     reason='Incoming duplicate',
                                     charset='utf-8')
-            # Если статус отличается от успешно
+            # Если статус отличается НЕ 'успешно'
             if pay_status.lower() != 'успешно':
                 logger.debug(f'fПлохой статус: {pay}.')
                 # Проверяем на дубликат в BadScreen
-                is_duplicate = BadScreen.objects.filter(transaction=transaction).exists()
+                is_duplicate = BadScreen.objects.filter(transaction=transaction_m10).exists()
                 if not is_duplicate:
                     logger.debug('Сохраняем в BadScreen')
                     BadScreen.objects.create(name=name, worker=worker, image=image,
-                                             transaction=transaction, type=sms_type)
+                                             transaction=transaction_m10, type=sms_type)
                     return HttpResponse(status=status.HTTP_200_OK,
                                         reason='New BadScreen',
                                         charset='utf-8')
@@ -274,8 +286,12 @@ def screen(request: Request):
             serializer = IncomingSerializer(data=pay)
             if serializer.is_valid():
                 # Сохраянем Incoming
-                logger.debug(f'Incoming serializer valid. Сохраняем транзакцию {transaction}')
-                serializer.save(worker=worker, image=image)
+                logger.debug(f'Incoming serializer valid. Сохраняем транзакцию {transaction_m10}')
+                new_incoming = serializer.save(worker=worker, image=image)
+
+                # Логика после сохранения
+                make_after_incoming_save(new_incoming)
+
                 return HttpResponse(status=status.HTTP_201_CREATED,
                                     reason='created',
                                     charset='utf-8')
@@ -296,28 +312,14 @@ def screen(request: Request):
 
                 # Обработа неизвестных ошибок при сохранении
                 logger.warning('Неизестная ошибка')
-                if not BadScreen.objects.filter(transaction=transaction).exists():
-                    BadScreen.objects.create(name=name, worker=worker, image=image,
-                                             transaction=transaction, type=sms_type)
+                if not BadScreen.objects.filter(transaction=transaction_m10).exists():
+                    BadScreen.objects.create(name=name, worker=worker, transaction=transaction_m10, type=sms_type)
                     return HttpResponse(status=status.HTTP_200_OK,
                                         reason='invalid serializer. Add to trash',
                                         charset='utf-8')
                 return HttpResponse(status=status.HTTP_200_OK,
                                     reason='invalid serializer. Duplicate in trash',
                                     charset='utf-8')
-
-        else:
-            try:
-                # Действие если скрин не по известному шаблону
-                logger.debug('скрин не по известному шаблону')
-                BadScreen.objects.create(name=name, worker=worker, image=image)
-                logger.debug(f'BadScreen сохранен')
-                logger.debug(f'Возвращаем статус 200: not recognize')
-                return HttpResponse(status=status.HTTP_200_OK,
-                                    reason='not recognize',
-                                    charset='utf-8')
-            except Exception as err:
-                logger.error(err, exc_info=True)
 
     # Ошибка при обработке
     except Exception as err:

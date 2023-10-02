@@ -23,7 +23,6 @@ urlpatterns = [
 
     path('deposits/<int:pk>/', deposit_edit, name='deposit_edit'),
 
-
 ]
 
 if settings.DEBUG:
