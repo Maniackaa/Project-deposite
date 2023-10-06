@@ -15,7 +15,7 @@ headers = {
     'Sec-Fetch-Dest': 'empty',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Site': 'same-origin',
-    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE2OTQ2ODUwODYsImV4cCI6MTY5NDcyNTIwMCwicm9sZXMiOlsiUk9MRV9PUEVSQVRPUiJdLCJ1c2VybmFtZSI6Ik9wZXJhdG9yNl9aYWpvbl9BWk4ifQ.pEQSbSyngJOgWK2VoBPxiATZZqeG7965uGn8Eg5L5ru015chW_L1iQUdSTzLSXoXFIfhn1Iex38Og0iUNPJeC-5dSBp7sNJnN0UeLYFHb2_SICcc9MWiKLsAEBO2O2H_4ryJiobDj7_Bzg5hIR02kvE9PeSorPeSN19FkKxQ7tAObBd4wPwd6kZ0gUb4s3LkQ1w1PfE3nZOkCUEQuBrdQD1bjyaNLVYptkkYMApR2PwNSvp3LhgWCVgVv5eoDcg-OQDBTsG69KfrGFSveP6HvO5YjcasrG4WVkOmtV50BBI0bWOSsDfqicDOac-4L6P1RFlhb76vs7wf0ByI_yA52A',
+    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE2OTY1MDg1NTgsImV4cCI6MTY5NjUzOTYwMCwicm9sZXMiOlsiUk9MRV9PUEVSQVRPUiJdLCJ1c2VybmFtZSI6Ik9wZXJhdG9yNl9aYWpvbl9BWk4ifQ.cx6fD1o2bAmEJkmTS-CaSWg4ylYkTlq4wdIMmB1Q72Qx2tbnj_r8rKd7Ty016YMdLeqgw3dBKGjma8TnheGlHttn8lacP8abGZy-YvCSenB_ChTsIq_9zeSLSHEmQNnQAVntbm_AvtDIb8aIuLaK4q8-UrLcsBPxt2YO1Vk7u2lODZbdbmNbeNWZBwxK1haZjyBMIE1Vo35BiUZiDc9uRxc4zONxBm89Xuwx2BOBsqSRE-V5kIOK6Q8ylzI4s3jOkEANp0ugNYK9YzKxZEmXd_WqDDtCONCmoxEEawfB_oeVR9JDXmMdVJVm3_G_9a9C3pJ23b4PDEsJlx4CaDs1qg',
     'Connection': 'keep-alive',
     # 'Cookie': 'PHPSESSID=t0fqh9tu473mssn7lk84uvuhpq',
     # Requests doesn't support trailers
@@ -39,8 +39,9 @@ response = requests.post(
     json=json_data,
 )
 
-
+print(response.text)
 data = response.json()
+print(data)
 for row in data:
     for key, val in row.items():
         print(key, val)

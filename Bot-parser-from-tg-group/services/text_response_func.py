@@ -30,12 +30,28 @@ def date_response(data_text: str) -> datetime.datetime:
         native_datetime = datetime.datetime.fromisoformat(data_text.strip()) - datetime.timedelta(hours=1)
         response_data = tz.localize(native_datetime)
         return response_data
+    except ValueError:
+        pass
+    try:
+        native_datetime = datetime.datetime.strptime(data_text.strip(), '%d/%m/%y %H:%M:%S') - datetime.timedelta(hours=1)
+        response_data = tz.localize(native_datetime)
+        return response_data
+    except ValueError:
+        pass
+    try:
+        native_datetime = datetime.datetime.strptime(data_text.strip(), '%d.%m.%y %H:%M') - datetime.timedelta(hours=1)
+        response_data = tz.localize(native_datetime)
+        return response_data
+    except ValueError:
+        pass
     except Exception as err:
         err_log.error(f'Ошибка распознавания даты из текста: {err}')
         raise err
 
 
 # date_response('2023-08-19 12:30:14')
+# print(date_response('03/10/23 19:55:27'))
+# print(date_response('03.10.23 20:54'))
 
 
 def response_operations(fields: list[str], groups: tuple[str], response_fields, sms_type: str):
@@ -52,7 +68,7 @@ def response_operations(fields: list[str], groups: tuple[str], response_fields, 
                 result[key] = value
         except Exception as err:
             error_text = f'Ошибка распознавания поля {key}: {err}'
-            logger.error(error_text)
+            logger.error(error_text, exc_info=True)
             errors.append(error_text)
 
     errors.extend(get_unrecognized_field_error_text(response_fields, result))
@@ -158,6 +174,30 @@ def response_sms4(fields, groups) -> dict[str, str | float]:
         'balance':          {'pos': 4, 'func': float_digital},
     }
     sms_type = 'sms4'
+    try:
+        result = response_operations(fields, groups, response_fields, sms_type)
+        return result
+    except Exception as err:
+        err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
+        raise err
+
+
+def response_sms5(fields, groups) -> dict[str, str | float]:
+    """
+    Функия распознавания шаблона 5
+    :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'type']
+    :param groups: ('0.01', '***7680', 'P2P SEND- LEO APP, AZ', '03.10.23 20:54', '1.01 )
+    :return: dict[str, str | float]
+    """
+    logger.debug(f'fields:{fields} groups:{groups}')
+    response_fields = {
+        'response_date':    {'pos': 3, 'func': date_response},
+        'recipient':        {'pos': 1},
+        'sender':           {'pos': 2},
+        'pay':              {'pos': 0, 'func': float_digital},
+        'balance':          {'pos': 4, 'func': float_digital},
+    }
+    sms_type = 'sms5'
     try:
         result = response_operations(fields, groups, response_fields, sms_type)
         return result

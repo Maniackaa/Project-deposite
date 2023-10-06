@@ -16,7 +16,7 @@ from services.ocr_response_func import img_path_to_str, \
     response_m10, response_m10_short
 from services.support_func import send_alarm_to_admin
 from services.text_response_func import response_sms1, response_sms2, \
-    response_sms3, response_sms4
+    response_sms3, response_sms4, response_sms5
 
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger('bot_logger')
@@ -43,15 +43,17 @@ async def sms_receiver(message: Message, bot: Bot):
         message_url = message.get_url(force_private=True)
         patterns = {
             'sms1': r'^Imtina:(.*)\nKart:(.*)\nTarix:(.*)\nMercant:(.*)\nMebleg:(.*) .+\nBalans:(.*) ',
-            'sms2': r'^Mebleg:(.+) AZN.*\nKart:(.*)\nTarix:(.*)\nMerchant:(.*)\nBalans:(.*) .*',
+            'sms2': r'.*Mebleg:(.+) AZN.*\nKart:(.*)\nTarix:(.*)\nMerchant:(.*)\nBalans:(.*) .*',
             'sms3': r'^.+[medaxil|mexaric] (.+?) AZN (.*)(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d).+Balance: (.+?) AZN.*',
-            'sms4': r'^Amount:(.+?) AZN[\n]?.*\nCard:(.*)\nDate:(.*)\nMerchant:(.*)\nBalance:(.*) .*'
+            'sms4': r'^Amount:(.+?) AZN[\n]?.*\nCard:(.*)\nDate:(.*)\nMerchant:(.*)\nBalance:(.*) .*',
+            'sms5': r'.*Mebleg:(.+) AZN.*\nMedaxil Card to card (.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN'
         }
         response_func = {
             'sms1': response_sms1,
             'sms2': response_sms2,
             'sms3': response_sms3,
             'sms4': response_sms4,
+            'sms5': response_sms5,
         }
         fields = ['response_date', 'recipient', 'sender', 'pay', 'balance',
                   'transaction', 'type']
@@ -85,13 +87,14 @@ async def sms_receiver(message: Message, bot: Bot):
             logger.info(f'Добавляем в нераспознанное:\n {message.text}')
             add_to_trash(message.text)
 
-            for admin in conf.tg_bot.admin_ids:
-                try:
-                    await bot.send_message(admin, 'Не распознано сообщение')
-                    await message.forward(chat_id=admin)
-                except Exception as err:
-                    print(err)
-                    pass
+            if not message.text.startswith('OTP kod'):
+                for admin in conf.tg_bot.admin_ids:
+                    try:
+                        await bot.send_message(admin, 'Не распознано сообщение')
+                        await message.forward(chat_id=admin)
+                    except Exception as err:
+                        print(err)
+                        pass
 
         if errors:
             await send_alarm_to_admin(text, errors, bot)
@@ -194,6 +197,7 @@ async def ocr_photo(message: Message, bot: Bot):
 
         if errors:
             await send_alarm_to_admin(text, errors, bot)
+
         print(f'{round(time.perf_counter() - start, 2)} сек.')
 
         if chat_type == 'private':

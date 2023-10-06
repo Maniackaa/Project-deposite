@@ -60,10 +60,15 @@ async def main():
             for incoming in new_incomings:
                 logger1.debug(incoming)
                 pk = incoming.id
+                resp_date = incoming.response_date
+                if resp_date:
+                    resp_date = resp_date.strftime('%Y.%m.%d %H:%M')
+                else:
+                    resp_date = 'unknown'
                 row = [
                     incoming.id,
                     incoming.register_date.strftime('%Y.%m.%d %H:%M'),
-                    incoming.response_date.strftime('%Y.%m.%d %H:%M'),
+                    resp_date,
                     incoming.recipient,
                     incoming.sender,
                     incoming.pay,

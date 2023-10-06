@@ -32,6 +32,15 @@ def add_pay_to_db(pay: dict):
     try:
         session = Session()
         with session:
+            response_date = pay.get('response_date')
+            sender = pay.get('sender')
+            pay_sum = pay.get('pay')
+            old_incomings = session.execute(select(Incoming).where(Incoming.response_date == response_date,
+                                                                   Incoming.sender == sender,
+                                                                   Incoming.pay == pay_sum)).all()
+            if old_incomings:
+                logger.warning(f'Транзакция уже есть')
+                return 'duplicate'
             incoming = Incoming(**pay)
             session.add(incoming)
             session.commit()
@@ -39,7 +48,7 @@ def add_pay_to_db(pay: dict):
     except IntegrityError as err:
         logger.error(err)
         logger.warning(f'Транзакция уже есть')
-        return 'duplicate'
+
     except Exception as err:
         logger.debug(f'Ошибка при добавлении в базу', exc_info=True)
         raise err

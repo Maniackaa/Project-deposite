@@ -69,6 +69,7 @@ services:
       - db_postgres
     volumes:
       - ./logs/Bot-parser:/app/logs
+      - ./Bot-parser-from-tg-group:/app
 
   table1-writer1:
     restart: always
