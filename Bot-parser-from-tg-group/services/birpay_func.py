@@ -82,7 +82,7 @@ def get_birpay_list(results=50) -> list[dict]:
             headers=headers,
             json=json_data,
         )
-
+        logger.debug(f'response: {response.status_code}')
         if response.status_code == 401:
             # Обновление токена
             token = get_new_token()
@@ -119,11 +119,12 @@ def get_birpay_list(results=50) -> list[dict]:
                 #     print(f'{key}: {val}')
                 # print('-------------------\n')
             return birpay_deposits
+        logger.debug(f'{response.text}')
     except Exception as err:
         print(err)
 
 
-def find_birpay_transaction(m10_incoming, threshold=10):
+def find_birpay_transaction(m10_incoming: dict, threshold=10):
     """
     Находит первый неподтвержденный депозит за последние 10 минут
      при совпадении суммы, отправителя/
@@ -132,18 +133,25 @@ def find_birpay_transaction(m10_incoming, threshold=10):
         logger.debug(f'Ищем birpay для {m10_incoming}')
         birpay_list = get_birpay_list()
         for deposit in birpay_list[::-1]:
-            m10_sender_first_part = m10_incoming.sender[1:7].strip().replace(' ', '')
-            m10_sender_end = m10_incoming.sender[-2:]
-            result = all([
-                deposit['status'] == 0,
-                deposit['sender'].startswith(m10_sender_first_part),
-                deposit['sender'].endswith(m10_sender_end),
-                deposit['pay'] == m10_incoming.pay,
-                datetime.datetime.now(tz=tz) - deposit['created_time'] < datetime.timedelta(minutes=threshold)
-            ])
-            if result:
-                logger.debug(f'Найден: {deposit["id"]}')
-                return deposit['id']
+            try:
+                # +994 55 *** ** 46
+                m10_sender_first_part = m10_incoming.get('sender')[:7].strip().replace(' ', '').replace('+', '')
+                m10_sender_end = m10_incoming.get('sender')[-2:]
+                d_sender_zero = deposit['sender'][:3] + deposit['sender'][4:6]  # убираем нолик
+                result = all([
+                    deposit['status'] == 0,
+                    deposit['sender'].startswith(m10_sender_first_part) or d_sender_zero == m10_sender_first_part,  # 9940515907027 или 994515907027 (99451)
+                    deposit['sender'].endswith(m10_sender_end),
+                    deposit['pay'] == m10_incoming.get('pay'),
+                    datetime.datetime.now(tz=tz) - deposit['created_time'] < datetime.timedelta(minutes=threshold)
+                ])
+                if result:
+                    logger.debug(f'Найден: {deposit["id"]}')
+                    return deposit['id']
+            except Exception as err:
+                logger.warning(f'Ошибка в депозите {deposit}: {err}')
+                err_log.error(err, exc_info=True)
+        logger.debug('birpay не найден')
     except Exception as err:
         err_log.error(f'Ошибка при поиске birpay: {err}')
 
@@ -154,13 +162,13 @@ if __name__ == '__main__':
     # print(birpay_list)
     print(time.perf_counter() - start)
 
-    m10_incoming = Incoming(
-        id=36390,
-        register_date=datetime.datetime(2023, 10, 6, 10, 11, 53),
-        response_date=datetime.datetime(2023, 10, 6, 10, 00),
-        recipient='+994 51 776 40 97',
-        sender='+994 55 *** ** 46',
-        pay=100
-    )
+    m10_incoming = {
+        'id': 36390,
+        'register_date': datetime.datetime(2023, 10, 6, 10, 11, 53),
+        'response_date': datetime.datetime(2023, 10, 6, 10, 00),
+        'recipient': '+994 51 776 40 97',
+        'sender': '+994 55 *** ** 46',
+        'pay': 100
+    }
     bir_transaction = find_birpay_transaction(m10_incoming)
     print(bir_transaction)

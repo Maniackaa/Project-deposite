@@ -94,7 +94,10 @@ def find_birpay_transaction(m10_incoming, birpay_list, threshold=10):
      при совпадении суммы, отправителя/
     """
     for deposit in birpay_list:
-        m10_sender_first_part = m10_incoming.sender[1:7].strip().replace(' ', '')
+        print(deposit)
+        m10_sender_first_part = m10_incoming.sender[:7].strip().replace(' ', '').replace('+', '')
+        print(m10_sender_first_part)
+
         m10_sender_end = m10_incoming.sender[-2:]
         result = all([
             deposit['status'] == 0,
@@ -118,7 +121,11 @@ m10_incoming = Incoming(
     response_date=datetime.datetime(2023, 10, 6, 10, 00),
     recipient='+994 51 776 40 97',
     sender='+994 55 *** ** 46',
+    # sender='5522 09** **** 9189',
     pay=100
 )
 bir_transaction = find_birpay_transaction(m10_incoming, birpay_list)
 print(bir_transaction)
+
+x = '9940515907027'
+print(x[:3] + x[4:6])

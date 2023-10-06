@@ -168,6 +168,7 @@ async def ocr_photo(message: Message, bot: Bot):
             logger.debug(f'Сохраняем в базу {responsed_pay}')
             is_used_transaction = check_transaction(responsed_pay['transaction'])
 
+            # Если не дубль
             if not is_used_transaction:
                 # пробуем добавлять в базу
                 is_add_to_db = add_pay_to_db(responsed_pay)
@@ -177,7 +178,9 @@ async def ocr_photo(message: Message, bot: Bot):
 
                     # Пробуем найти birpay
                     try:
+                        logger.debug('Пробуем найти birpay')
                         birpay = find_birpay_transaction(responsed_pay)
+                        logger.debug(f'birpay: {birpay}')
                         if birpay:
                             await message.reply(f'Возможный bitpay_id: <code>{birpay}</code>')
                     except Exception as err:
