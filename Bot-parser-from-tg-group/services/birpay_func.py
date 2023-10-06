@@ -1,0 +1,166 @@
+import datetime
+import time
+
+import requests
+
+from config_data.bot_conf import BASE_DIR, tz, get_my_loggers
+from database.db import Incoming
+
+logger, err_log, *other = get_my_loggers()
+
+
+def get_new_token(username='Operator6_Zajon_AZN', password='hRQLVYCJ'):
+    """Обновляет токен и сохраняет в файл"""
+    logger.debug('Обновляем токен')
+    cookies = None
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/118.0',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
+        'Content-Type': 'application/json;charset=utf-8',
+        'Origin': 'https://birpay-gate.com',
+        'Connection': 'keep-alive',
+        'Referer': 'https://birpay-gate.com/login',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+    }
+
+    json_data = {
+        'username': username,
+        'password': password,
+    }
+
+    response = requests.post('https://birpay-gate.com/api/login_check', cookies=cookies, headers=headers, json=json_data)
+    if response.status_code == 200:
+        token = response.json().get('token')
+        with open(BASE_DIR / 'token.txt', 'w') as file:
+            file.write(token)
+        return token
+
+
+def get_birpay_list(results=50) -> list[dict]:
+    try:
+        token_path = BASE_DIR / 'token.txt'
+        token = ''
+
+        if token_path.exists():
+            with open(token_path, 'r') as file:
+                token = file.read()
+
+        cookies = None
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
+            'Content-Type': 'application/json;charset=utf-8',
+            'Referer': 'https://birpay-gate.com/refill-orders/list',
+            'Origin': 'https://birpay-gate.com',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'Authorization': f'Bearer {token}',
+            'Connection': 'keep-alive',
+        }
+
+        json_data = {
+            'filter': {
+                'refillMethodTypeId': 104,  # m10
+            },
+            'sort': {},
+            'limit': {
+                'lastId': 0,
+                'maxResults': results,
+                'descending': True,
+            },
+        }
+
+        response = requests.post(
+            'https://birpay-gate.com/api/operator/refill_order/find',
+            cookies=cookies,
+            headers=headers,
+            json=json_data,
+        )
+
+        if response.status_code == 401:
+            # Обновление токена
+            token = get_new_token()
+            headers['Authorization']= f'Bearer {token}'
+            response = requests.post(
+                'https://birpay-gate.com/api/operator/refill_order/find',
+                cookies=cookies,
+                headers=headers,
+                json=json_data,
+            )
+
+        if response.status_code == 200:
+            # print(response.text)
+            data = response.json()
+            birpay_deposits = []
+            for row in data:
+                bir_id = row.get('merchantTransactionId')
+                status = row.get('status')
+                sender = row.get('customerWalletId')
+                requisite = row.get('paymentRequisite')
+                recipient = requisite.get('payload')['phone_number']
+                pay = float(row.get('amount'))
+                created_time = datetime.datetime.fromisoformat(row.get('createdAt'))
+                logger.debug(f'{bir_id, sender, recipient, created_time, pay}')
+                birpay_deposits.append({
+                    'id': bir_id,
+                    'status': status,
+                    'sender': sender,
+                    'recipient': recipient,
+                    'created_time': created_time,
+                    'pay': pay,
+                })
+                # for key, val in row.items():
+                #     print(f'{key}: {val}')
+                # print('-------------------\n')
+            return birpay_deposits
+    except Exception as err:
+        print(err)
+
+
+def find_birpay_transaction(m10_incoming, threshold=10):
+    """
+    Находит первый неподтвержденный депозит за последние 10 минут
+     при совпадении суммы, отправителя/
+    """
+    try:
+        logger.debug(f'Ищем birpay для {m10_incoming}')
+        birpay_list = get_birpay_list()
+        for deposit in birpay_list[::-1]:
+            m10_sender_first_part = m10_incoming.sender[1:7].strip().replace(' ', '')
+            m10_sender_end = m10_incoming.sender[-2:]
+            result = all([
+                deposit['status'] == 0,
+                deposit['sender'].startswith(m10_sender_first_part),
+                deposit['sender'].endswith(m10_sender_end),
+                deposit['pay'] == m10_incoming.pay,
+                datetime.datetime.now(tz=tz) - deposit['created_time'] < datetime.timedelta(minutes=threshold)
+            ])
+            if result:
+                logger.debug(f'Найден: {deposit["id"]}')
+                return deposit['id']
+    except Exception as err:
+        err_log.error(f'Ошибка при поиске birpay: {err}')
+
+
+if __name__ == '__main__':
+    start = time.perf_counter()
+    birpay_list = get_birpay_list()
+    # print(birpay_list)
+    print(time.perf_counter() - start)
+
+    m10_incoming = Incoming(
+        id=36390,
+        register_date=datetime.datetime(2023, 10, 6, 10, 11, 53),
+        response_date=datetime.datetime(2023, 10, 6, 10, 00),
+        recipient='+994 51 776 40 97',
+        sender='+994 55 *** ** 46',
+        pay=100
+    )
+    bir_transaction = find_birpay_transaction(m10_incoming)
+    print(bir_transaction)

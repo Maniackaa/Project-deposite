@@ -11,6 +11,7 @@ from config_data.bot_conf import LOGGING_CONFIG, BASE_DIR, conf
 
 import logging.config
 
+from services.birpay_func import find_birpay_transaction
 from services.db_func import add_pay_to_db, check_transaction, add_to_trash
 from services.ocr_response_func import img_path_to_str, \
     response_m10, response_m10_short
@@ -173,6 +174,15 @@ async def ocr_photo(message: Message, bot: Bot):
                 if is_add_to_db:
                     logger.info(f'Сохранено базу {responsed_pay}')
                     await message.reply(f'Добавлено в базу. Шаблон {text_sms_type} за {round(time.perf_counter() - start, 2)} сек.')
+
+                    # Пробуем найти birpay
+                    try:
+                        birpay = find_birpay_transaction(responsed_pay)
+                        if birpay:
+                            await message.reply(f'Возможный bitpay_id: <code>{birpay}</code>')
+                    except Exception as err:
+                        logger.error(f'Ошибка при поиске birpay: {err}')
+
                 else:
                     logger.debug(f'Не добавлено в базу!')
             else:

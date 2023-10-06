@@ -1,50 +1,124 @@
+import datetime
+import time
+
 import requests
 
-cookies = {
-    'PHPSESSID': 't0fqh9tu473mssn7lk84uvuhpq',
-}
+from birpay.get_token import get_new_token
+from config_data.bot_conf import tz
+from database.db import Incoming
 
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-    # 'Accept-Encoding': 'gzip, deflate, br',
-    'Content-Type': 'application/json;charset=utf-8',
-    'Referer': 'https://birpay-gate.com/refill-orders/list',
-    'Origin': 'https://birpay-gate.com',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-origin',
-    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE2OTY1MDg1NTgsImV4cCI6MTY5NjUzOTYwMCwicm9sZXMiOlsiUk9MRV9PUEVSQVRPUiJdLCJ1c2VybmFtZSI6Ik9wZXJhdG9yNl9aYWpvbl9BWk4ifQ.cx6fD1o2bAmEJkmTS-CaSWg4ylYkTlq4wdIMmB1Q72Qx2tbnj_r8rKd7Ty016YMdLeqgw3dBKGjma8TnheGlHttn8lacP8abGZy-YvCSenB_ChTsIq_9zeSLSHEmQNnQAVntbm_AvtDIb8aIuLaK4q8-UrLcsBPxt2YO1Vk7u2lODZbdbmNbeNWZBwxK1haZjyBMIE1Vo35BiUZiDc9uRxc4zONxBm89Xuwx2BOBsqSRE-V5kIOK6Q8ylzI4s3jOkEANp0ugNYK9YzKxZEmXd_WqDDtCONCmoxEEawfB_oeVR9JDXmMdVJVm3_G_9a9C3pJ23b4PDEsJlx4CaDs1qg',
-    'Connection': 'keep-alive',
-    # 'Cookie': 'PHPSESSID=t0fqh9tu473mssn7lk84uvuhpq',
-    # Requests doesn't support trailers
-    # 'TE': 'trailers',
-}
 
-json_data = {
-    'filter': {},
-    'sort': {},
-    'limit': {
-        'lastId': 0,
-        'maxResults': 4,
-        'descending': True,
-    },
-}
+def get_birpay_list(results=50):
+    try:
+        with open('token.txt', 'r') as file:
+            token = file.read()
 
-response = requests.post(
-    'https://birpay-gate.com/api/operator/refill_order/find',
-    cookies=cookies,
-    headers=headers,
-    json=json_data,
+        cookies = None
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
+            'Content-Type': 'application/json;charset=utf-8',
+            'Referer': 'https://birpay-gate.com/refill-orders/list',
+            'Origin': 'https://birpay-gate.com',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'Authorization': f'Bearer {token}',
+            'Connection': 'keep-alive',
+        }
+
+        json_data = {
+            'filter': {
+                'refillMethodTypeId': 104,  # m10
+            },
+            'sort': {},
+            'limit': {
+                'lastId': 0,
+                'maxResults': results,
+                'descending': True,
+            },
+        }
+
+        response = requests.post(
+            'https://birpay-gate.com/api/operator/refill_order/find',
+            cookies=cookies,
+            headers=headers,
+            json=json_data,
+        )
+
+        if response.status_code == 401:
+            # Обновление токена
+            token = get_new_token()
+            headers['Authorization']= f'Bearer {token}'
+            response = requests.post(
+                'https://birpay-gate.com/api/operator/refill_order/find',
+                cookies=cookies,
+                headers=headers,
+                json=json_data,
+            )
+
+        if response.status_code == 200:
+            print(response.text)
+            data = response.json()
+            birpay_deposits = []
+            for row in data:
+                id = row.get('merchantTransactionId')
+                status = row.get('status')
+                sender = row.get('customerWalletId')
+                requisite = row.get('paymentRequisite')
+                recipient = requisite.get('payload')['phone_number']
+                pay = float(row.get('amount'))
+                created_time = datetime.datetime.fromisoformat(row.get('createdAt'))
+                print(id, sender, recipient, created_time, pay)
+                birpay_deposits.append({
+                    'id': id,
+                    'status': status,
+                    'sender': sender,
+                    'recipient': recipient,
+                    'created_time': created_time,
+                    'pay': pay,
+                })
+                # for key, val in row.items():
+                #     print(f'{key}: {val}')
+                # print('-------------------\n')
+            return birpay_deposits
+    except Exception as err:
+        print(err)
+
+
+def find_birpay_transaction(m10_incoming, birpay_list, threshold=10):
+    """
+    Находит первый неподтвержденный депозит за последние 10 минут
+     при совпадении суммы, отправителя/
+    """
+    for deposit in birpay_list:
+        m10_sender_first_part = m10_incoming.sender[1:7].strip().replace(' ', '')
+        m10_sender_end = m10_incoming.sender[-2:]
+        result = all([
+            deposit['status'] == 0,
+            deposit['sender'].startswith(m10_sender_first_part),
+            deposit['sender'].endswith(m10_sender_end),
+            deposit['pay'] == m10_incoming.pay,
+            datetime.datetime.now(tz=tz) - deposit['created_time'] < datetime.timedelta(minutes=threshold)
+        ])
+        if result:
+            return deposit['id']
+
+
+start = time.perf_counter()
+birpay_list = get_birpay_list()
+# print(birpay_list)
+print(time.perf_counter() - start)
+
+m10_incoming = Incoming(
+    id=36390,
+    register_date=datetime.datetime(2023, 10, 6, 10, 11, 53),
+    response_date=datetime.datetime(2023, 10, 6, 10, 00),
+    recipient='+994 51 776 40 97',
+    sender='+994 55 *** ** 46',
+    pay=100
 )
-
-print(response.text)
-data = response.json()
-print(data)
-for row in data:
-    for key, val in row.items():
-        print(key, val)
-print()
-for key, val in data[0].items():
-    print(key, val)
+bir_transaction = find_birpay_transaction(m10_incoming, birpay_list)
+print(bir_transaction)
