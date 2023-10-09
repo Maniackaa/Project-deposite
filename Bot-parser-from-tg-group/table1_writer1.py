@@ -49,10 +49,15 @@ async def main():
         try:
             start = time.perf_counter()
             table1_last_num = r.get('table1_last_num')
+            table1_offset = r.get('table1_offset')
             if not table1_last_num:
                 table1_last_num = 0
             else:
                 table1_last_num = int(table1_last_num.decode())
+            if not table1_offset:
+                table1_offset = 0
+            else:
+                table1_offset = int(table1_offset.decode())
             logger1.debug(f'table1_last_num: {table1_last_num}')
             new_incomings: list[Incoming] = read_new_incomings(table1_last_num)
             rows = []
@@ -77,7 +82,7 @@ async def main():
                 ]
                 rows.append(row)
             if rows:
-                await write_to_table(rows, start_row=table1_last_num + 2)
+                await write_to_table(rows, start_row=table1_last_num + 2 - table1_offset)
                 r.set('table1_last_num', pk)
                 logger1.debug(f'Записи добавлены за {time.perf_counter() - start}')
 
