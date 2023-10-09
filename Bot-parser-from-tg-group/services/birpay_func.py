@@ -132,24 +132,35 @@ def find_birpay_transaction(m10_incoming: dict, threshold=10):
     try:
         logger.debug(f'Ищем birpay для {m10_incoming}')
         birpay_list = get_birpay_list()
-        for deposit in birpay_list[::-1]:
+        for birpay_deposit in birpay_list[::-1]:
             try:
                 # +994 55 *** ** 46
                 m10_sender_first_part = m10_incoming.get('sender')[:7].strip().replace(' ', '').replace('+', '')
                 m10_sender_end = m10_incoming.get('sender')[-2:]
-                d_sender_zero = deposit['sender'][:3] + deposit['sender'][4:6]  # убираем нолик
+                birpay_sender_without_zero = birpay_deposit['sender'][:3] + birpay_deposit['sender'][4:]  # убираем нолик
                 result = all([
-                    deposit['status'] == 0,
-                    deposit['sender'].startswith(m10_sender_first_part) or d_sender_zero == m10_sender_first_part,  # 9940515907027 или 994515907027 (99451)
-                    deposit['sender'].endswith(m10_sender_end),
-                    deposit['pay'] == m10_incoming.get('pay'),
-                    datetime.datetime.now(tz=tz) - deposit['created_time'] < datetime.timedelta(minutes=threshold)
+                    birpay_deposit['status'] == 0,
+                    birpay_deposit['sender'].startswith(m10_sender_first_part) or birpay_sender_without_zero == m10_sender_first_part,  # 9940515907027 или 994515907027 (99451)
+                    birpay_deposit['sender'].endswith(m10_sender_end),
+                    birpay_deposit['pay'] == m10_incoming.get('pay'),
+                    datetime.datetime.now(tz=tz) - birpay_deposit['created_time'] < datetime.timedelta(minutes=threshold)
                 ])
+                logger.debug(f'birpay_deposit: {birpay_deposit}', f'without zero: {birpay_sender_without_zero}')
+                logger.debug(f'm10_first: {m10_sender_first_part}, end: {m10_sender_end}')
+                logger.debug(
+                    (birpay_deposit['status'] == 0,
+                     birpay_deposit['sender'].startswith(
+                     m10_sender_first_part) or birpay_sender_without_zero == m10_sender_first_part,  # 9940515907027 или 994515907027 (99451)
+                     birpay_deposit['sender'].endswith(m10_sender_end),
+                     birpay_deposit['pay'] == m10_incoming.get('pay'),
+                     datetime.datetime.now(tz=tz) - birpay_deposit['created_time'] < datetime.timedelta(minutes=threshold)
+                    )
+                )
                 if result:
-                    logger.debug(f'Найден: {deposit["id"]}')
-                    return deposit['id']
+                    logger.debug(f'Найден: {birpay_deposit["id"]}')
+                    return birpay_deposit['id']
             except Exception as err:
-                logger.warning(f'Ошибка в депозите {deposit}: {err}')
+                logger.warning(f'Ошибка в депозите {birpay_deposit}: {err}')
                 err_log.error(err, exc_info=True)
         logger.debug('birpay не найден')
     except Exception as err:

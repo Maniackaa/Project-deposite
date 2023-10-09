@@ -54,7 +54,6 @@ async def main():
             else:
                 table1_last_num = int(table1_last_num.decode())
             logger1.debug(f'table1_last_num: {table1_last_num}')
-
             new_incomings: list[Incoming] = read_new_incomings(table1_last_num)
             rows = []
             for incoming in new_incomings:

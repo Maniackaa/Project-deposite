@@ -37,7 +37,15 @@ async def load_range_values(url=conf.tg_bot.TABLE_1, sheets_num=0, diap='А:А')
 
 
 async def write_to_table(rows: list[list], start_row=1, url=conf.tg_bot.TABLE_1, sheets_num=0, delta_col=0):
-    """Записывает строки в таблицу"""
+    """
+    Функция отправки анкеты CSI через бота
+    :param rows: список строк для вставки
+    :param start_row: Номер первой строки
+    :param url: адрес таблицы
+    :param sheets_num: номер листа
+    :param delta_col: смещение по столбцам
+    :return:
+    """
     if not rows:
         return
     logger.debug(f'Добавляем c {start_row}: {rows}')
@@ -48,12 +56,9 @@ async def write_to_table(rows: list[list], start_row=1, url=conf.tg_bot.TABLE_1,
     # await table.append_rows(rows)
     num_rows = len(rows)
     num_col = len(rows[0])
-
-    last_row = start_row
-    print(last_row)
-    logger.debug(f'{rowcol_to_a1(last_row, 1 + delta_col)}:{rowcol_to_a1(last_row + num_rows, num_col + delta_col)}')
+    logger.debug(f'{rowcol_to_a1(start_row, 1 + delta_col)}:{rowcol_to_a1(start_row + num_rows, num_col + delta_col)}')
     x = await table.batch_update([{
-        'range': f'{rowcol_to_a1(last_row, 1 + delta_col)}:{rowcol_to_a1(last_row + num_rows, num_col + delta_col)}',
+        'range': f'{rowcol_to_a1(start_row, 1 + delta_col)}:{rowcol_to_a1(start_row + num_rows, num_col + delta_col)}',
         'values': rows,
     }])
     print('x', x)
