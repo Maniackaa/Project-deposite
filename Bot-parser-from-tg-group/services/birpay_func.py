@@ -1,15 +1,18 @@
 import datetime
+import os
 import time
 
 import requests
 
 from config_data.bot_conf import BASE_DIR, tz, get_my_loggers
-from database.db import Incoming
 
 logger, err_log, *other = get_my_loggers()
 
+birpay_login = os.getenv('BIRPAY_LOGIN')
+birpay_password = os.getenv('BIRPAY_PASSWORD')
 
-def get_new_token(username='Operator6_Zajon_AZN', password='hRQLVYCJ'):
+
+def get_new_token(username=birpay_login, password=birpay_password):
     """Обновляет токен и сохраняет в файл"""
     logger.debug('Обновляем токен')
     cookies = None
@@ -145,7 +148,7 @@ def find_birpay_transaction(m10_incoming: dict, threshold=10):
                     birpay_deposit['pay'] == m10_incoming.get('pay'),
                     datetime.datetime.now(tz=tz) - birpay_deposit['created_time'] < datetime.timedelta(minutes=threshold)
                 ])
-                logger.debug(f'birpay_deposit: {birpay_deposit}', f'without zero: {birpay_sender_without_zero}')
+                logger.debug(f'birpay_deposit: {birpay_deposit} without zero: {birpay_sender_without_zero}')
                 logger.debug(f'm10_first: {m10_sender_first_part}, end: {m10_sender_end}')
                 logger.debug(
                     (birpay_deposit['status'] == 0,
