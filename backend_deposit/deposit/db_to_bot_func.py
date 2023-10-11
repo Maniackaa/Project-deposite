@@ -60,6 +60,16 @@ def add_incoming_from_asu_to_bot_db(asu_incoming):
     Добавляет платеж в базу с ботом на основании распознанного сркина с asu-payme
     """
     try:
+        logger.debug(
+            f'Сохраняем:'
+            f'response_date: {str(asu_incoming.response_date)}\n'
+            f'recipient: {asu_incoming.recipient}'
+            f'sender: {asu_incoming.sender}'
+            f'pay: {asu_incoming.pay}'
+            f'balance: {asu_incoming.balance}'
+            f'transaction: {asu_incoming.transaction}'
+            f'type: {type}'
+            )
         with Session() as session:
             bot_incoming = Incoming(
                 response_date=asu_incoming.response_date,
@@ -76,3 +86,19 @@ def add_incoming_from_asu_to_bot_db(asu_incoming):
             return bot_incoming
     except Exception as err:
         logger.error(f'Ошибка добавления в базу бота: {err}')
+
+# with Session() as session:
+#     try:
+#         bot_incoming = Incoming(
+#             response_date=datetime.datetime.now(),
+#             recipient='test recep',
+#             sender='тестовый с сайта',
+#             pay=0,
+#             balance=10,
+#             transaction=123456789,
+#             type='m10',
+#         )
+#         session.add(bot_incoming)
+#         session.commit()
+#     except Exception as err:
+#         print(err)
