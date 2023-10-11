@@ -63,21 +63,21 @@ def add_incoming_from_asu_to_bot_db(asu_incoming):
         logger.debug(
             f'Сохраняем:'
             f'response_date: {str(asu_incoming.response_date)}\n'
-            f'recipient: {asu_incoming.recipient}'
-            f'sender: {asu_incoming.sender}'
-            f'pay: {asu_incoming.pay}'
-            f'balance: {asu_incoming.balance}'
-            f'transaction: {asu_incoming.transaction}'
-            f'type: {type}'
+            f'recipient: {asu_incoming.recipient}\n'
+            f'sender: {asu_incoming.sender}\n'
+            f'pay: {asu_incoming.pay}\n'
+            f'balance: {asu_incoming.balance}\n'
+            f'transaction: {asu_incoming.transaction}\n'
+            f'type: {asu_incoming.type}'
             )
         with Session() as session:
             bot_incoming = Incoming(
                 response_date=asu_incoming.response_date,
                 recipient=asu_incoming.recipient,
-                sender='тестовый с сайта',
-                pay=0,
+                sender=asu_incoming.sender,
+                pay=asu_incoming.pay,
                 balance=asu_incoming.balance,
-                transaction=99999999,
+                transaction=asu_incoming.transaction,
                 type=asu_incoming.type,
             )
             session.add(bot_incoming)
