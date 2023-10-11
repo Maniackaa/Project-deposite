@@ -61,7 +61,6 @@ def add_incoming_from_asu_to_bot_db(asu_incoming):
     """
     try:
         with Session() as session:
-
             bot_incoming = Incoming(
                 response_date=asu_incoming.response_date,
                 recipient=asu_incoming.recipient,
@@ -72,6 +71,7 @@ def add_incoming_from_asu_to_bot_db(asu_incoming):
                 type=asu_incoming.type,
             )
             session.add(bot_incoming)
+            session.commit()
             logger.debug(f'Добавлен в базу бота: {bot_incoming}')
             return bot_incoming
     except Exception as err:

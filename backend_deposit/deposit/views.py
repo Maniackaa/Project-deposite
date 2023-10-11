@@ -293,6 +293,7 @@ def screen(request: Request):
                 make_after_incoming_save(new_incoming)
 
                 # Сохраняем в базу-бота телеграм:
+                logger.debug(f'Пробуем сохранить в базу бота: {new_incoming}')
                 add_incoming_from_asu_to_bot_db(new_incoming)
 
                 return HttpResponse(status=status.HTTP_201_CREATED,
