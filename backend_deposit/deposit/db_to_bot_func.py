@@ -67,7 +67,7 @@ def add_incoming_from_asu_to_bot_db(asu_incoming):
                 sender='тестовый с сайта',
                 pay=0,
                 balance=asu_incoming.balance,
-                transaction=asu_incoming.transaction,
+                transaction=99999999,
                 type=asu_incoming.type,
             )
             session.add(bot_incoming)
