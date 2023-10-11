@@ -19,7 +19,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 
-
+from deposit.db_to_bot_func import add_incoming_from_asu_to_bot_db
 from deposit.forms import DepositForm, DepositImageForm, DepositTransactionForm, DepositEditForm
 from deposit.func import img_path_to_str, make_after_incoming_save, make_after_save_deposit
 from deposit.models import BadScreen, Incoming, Deposit
@@ -291,6 +291,9 @@ def screen(request: Request):
 
                 # Логика после сохранения
                 make_after_incoming_save(new_incoming)
+
+                # Сохраняем в базу-бота телеграм:
+                add_incoming_from_asu_to_bot_db(new_incoming)
 
                 return HttpResponse(status=status.HTTP_201_CREATED,
                                     reason='created',
