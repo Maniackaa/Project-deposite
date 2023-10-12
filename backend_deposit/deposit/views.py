@@ -21,7 +21,7 @@ from rest_framework.request import Request
 
 from deposit.db_to_bot_func import add_incoming_from_asu_to_bot_db
 from deposit.forms import DepositForm, DepositImageForm, DepositTransactionForm, DepositEditForm
-from deposit.func import img_path_to_str, make_after_incoming_save, make_after_save_deposit
+from deposit.func import img_path_to_str, make_after_incoming_save, make_after_save_deposit, send_message_tg
 from deposit.models import BadScreen, Incoming, Deposit
 from deposit.screen_response import screen_text_to_pay
 from deposit.serializers import IncomingSerializer
@@ -251,6 +251,8 @@ def screen(request: Request):
             BadScreen.objects.create(name=name, worker=worker, image=image)
             logger.debug(f'BadScreen сохранен')
             logger.debug(f'Возвращаем статус 200: not recognize')
+            send_message_tg(message=f'Пришел хреновый скрин с {worker}: {name}', chat_id='6051226224')
+            send_message_tg(message=f'Пришел хреновый скрин с {worker}: {name}', chat_id=settings.ADMIN_IDS)
             return HttpResponse(status=status.HTTP_200_OK,
                                 reason='not recognize',
                                 charset='utf-8')

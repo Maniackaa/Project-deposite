@@ -3,6 +3,7 @@ import logging
 import cv2
 import numpy as np
 import pytesseract
+import requests
 
 from backend_deposit import settings
 from deposit.models import Deposit, Incoming
@@ -189,3 +190,16 @@ def make_after_save_deposit(instance):
 
     except Exception as err:
         logger.error(err, exc_info=True)
+
+
+def send_message_tg(message: str, chat_id: str = settings.MY_TG_ID):
+    """Отправка сообщения через чат-бот телеграмма"""
+    try:
+        url = (f'https://api.telegram.org/'
+               f'bot{settings.BOT_TOKEN}/'
+               f'sendMessage?'
+               f'chat_id={chat_id}&'
+               f'text={message}')
+        requests.get(url)
+    except Exception as err:
+        logger.error('err')
