@@ -192,7 +192,7 @@ def make_after_save_deposit(instance):
         logger.error(err, exc_info=True)
 
 
-def send_message_tg(message: str, chat_id: str = settings.MY_TG_ID):
+def send_message_tg(message: str, chat_id: str = settings.ADMIN_IDS):
     """Отправка сообщения через чат-бот телеграмма"""
     try:
         url = (f'https://api.telegram.org/'
