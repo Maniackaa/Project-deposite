@@ -17,7 +17,7 @@ from services.ocr_response_func import img_path_to_str, \
     response_m10, response_m10_short
 from services.support_func import send_alarm_to_admin
 from services.text_response_func import response_sms1, response_sms2, \
-    response_sms3, response_sms4, response_sms5
+    response_sms3, response_sms4, response_sms5, response_sms6
 
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger('bot_logger')
@@ -47,7 +47,7 @@ async def sms_receiver(message: Message, bot: Bot):
             'sms2': r'.*Mebleg:(.+) AZN.*\nKart:(.*)\nTarix:(.*)\nMerchant:(.*)\nBalans:(.*) .*',
             'sms3': r'^.+[medaxil|mexaric] (.+?) AZN (.*)(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d).+Balance: (.+?) AZN.*',
             'sms4': r'^Amount:(.+?) AZN[\n]?.*\nCard:(.*)\nDate:(.*)\nMerchant:(.*)\nBalance:(.*) .*',
-            'sms5': r'.*Mebleg:(.+) AZN.*\nMedaxil Card to card (.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN',
+            'sms5': r'.*Mebleg:(.+) AZN.*\n.*Card to card (.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN',
             'sms6': r'.*Mebleg:(.+) AZN.*\nHesaba medaxil: (.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN'
         }
         response_func = {
@@ -56,6 +56,7 @@ async def sms_receiver(message: Message, bot: Bot):
             'sms3': response_sms3,
             'sms4': response_sms4,
             'sms5': response_sms5,
+            'sms6': response_sms6,
         }
         fields = ['response_date', 'recipient', 'sender', 'pay', 'balance',
                   'transaction', 'type']
