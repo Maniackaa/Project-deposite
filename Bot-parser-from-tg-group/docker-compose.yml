@@ -90,3 +90,11 @@ services:
     volumes:
       - ./logs/Table2:/app/logs
 
+  ocr-test:
+    restart: no
+    build: ./
+    command: python3 ./tests/new_ocr.py
+    env_file: .env
+    volumes:
+      - .:/app
+

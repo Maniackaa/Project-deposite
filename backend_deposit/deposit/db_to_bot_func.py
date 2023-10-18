@@ -4,6 +4,7 @@ import os
 from time import time
 
 import pytz
+from django.conf import settings
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, String, DateTime, Float, Integer, MetaData
 from sqlalchemy.orm import DeclarativeBase
@@ -11,6 +12,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import sessionmaker
 
+from deposit.func import send_message_tg
 
 load_dotenv()
 
@@ -25,7 +27,7 @@ tz = pytz.timezone(os.getenv('TIMEZONE'))
 
 metadata = MetaData()
 db_url = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}"
-engine = create_engine(db_url, echo=False)
+engine = create_engine(db_url, echo=False, pool_pre_ping=True)
 
 Session = sessionmaker(bind=engine)
 
@@ -86,6 +88,9 @@ def add_incoming_from_asu_to_bot_db(asu_incoming):
             return bot_incoming
     except Exception as err:
         logger.error(f'Ошибка добавления в базу бота: {err}')
+        send_message_tg(message=f'Срин не добавился в базу. ({err})', chat_id='6051226224')
+        send_message_tg(message=f'Срин не добавился в базу. ({err})', chat_id=settings.ADMIN_IDS)
+
 
 # with Session() as session:
 #     try:

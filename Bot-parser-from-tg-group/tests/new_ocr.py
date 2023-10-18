@@ -89,22 +89,22 @@ from collections import Counter
 
 
 def check_pair(path_pair):
-    path = BASE_DIR / path_pair[0]
+    path = BASE_DIR / 'images' / path_pair[0]
     nums = set()
     for i in range(255):
         start = time.perf_counter()
         img = cv2.imdecode(np.fromfile(path, dtype=np.uint8), cv2.COLOR_RGB2GRAY)
-        _, binary = cv2.threshold(img, i, 255, cv2.THRESH_BINARY)
+        _, binary = cv2.threshold(img, i, 242, cv2.THRESH_BINARY)
         # plt.imshow(binary, cmap='gray')
         # plt.show()
         string = pytesseract.image_to_string(binary, lang='rus')
         # print(string)
         result = response_screenshot_template(string)
-        # print(result)
+        print(result)
 
         if result == path_pair[1]:
             nums.add(i)
-            print(i, result, time.perf_counter() - start)
+            # print(i, result, time.perf_counter() - start)
     print(nums)
     return nums
 
@@ -112,38 +112,43 @@ path_test = [
         ('1.jpg',
          {'msg_date': '2023-08-25', 'sender': '+994 70 *** ** 27', 'receiver': '+994 51 927 05 68', 'msg_time': '01:07',
           'balance_change': 5.0, 'transaction': '55555150'}),
-        ('2.jpg',
-         {'msg_date': '2023-08-25', 'sender': '+994 55 *** ** 57', 'receiver': '+994 51 927 05 68', 'msg_time': '01:03',
-          'balance_change': 100.0, 'transaction': '55554745'}),
-        ('3.jpg',
-         {'msg_date': '2023-08-25', 'sender': '+994 70 *** ** 27', 'receiver': '+994 51 927 05 68', 'msg_time': '00:39',
-          'balance_change': 5.0, 'transaction': '55551881'}),
-        ('4.jpg',
-         {'msg_date': '2023-08-25', 'sender': '+994 55 *** ** 57', 'receiver': '+994 51 927 05 68', 'msg_time': '00:33',
-          'balance_change': 50.0, 'transaction': '55551154'}),
-        ('5.jpg',
-         {'msg_date': '2023-08-24', 'sender': '+994 55 *** ** 77', 'receiver': '+994 51 927 05 68', 'msg_time': '22:17',
-          'balance_change': 12.0, 'transaction': '55522337'}),
-        ('wrong1_2.jpg',
-         {'msg_date': '2023-08-29', 'sender': '+994 70 *** ** 61', 'receiver': '+994 51 927 05 68', 'msg_time': '16:43',
-          'balance_change': 5.0, 'transaction': '56980169'}),
-        ('wrong1.jpg',
-         {'msg_date': '2023-08-29', 'sender': '+994 51 *** ** 01', 'receiver': '+994 51 927 05 68', 'msg_time': '16:25',
-          'balance_change': 7.0, 'transaction': '56973239'}),
-        ('wrong_price.jpg',
-         {'msg_date': '2023-08-30', 'sender': '+994 55 *** ** 91', 'receiver': '+994 51 927 05 68', 'msg_time': '13:33',
-          'balance_change': 20.0, 'transaction': '57253009'}),
-        ('wrong_price2.jpg',
-         {'msg_date': '2023-08-30', 'sender': '+994 50 *** ** 99', 'receiver': '+994 51 927 05 68', 'msg_time': '13:32',
-          'balance_change': 70.0, 'transaction': '57252522'}
-         ),
+        # ('2.jpg',
+        #  {'msg_date': '2023-08-25', 'sender': '+994 55 *** ** 57', 'receiver': '+994 51 927 05 68', 'msg_time': '01:03',
+        #   'balance_change': 100.0, 'transaction': '55554745'}),
+        ('scob.jpg',
+         {'msg_date': '2023-10-11', 'sender': '+994 55 *** ** 01', 'receiver': '+994 51 623 41 92', 'msg_time': '17:53', 'balance_change': 8.0, 'transaction': '72390881'}),
+        ('scob2.jpg',
+         {'msg_date': '2023-10-12', 'sender': '+994 55 *** ** 01', 'receiver': '+994 51 623 41 92', 'msg_time': '00:06',
+          'balance_change': 10.0, 'transaction': '72410952'}),
+        # ('3.jpg',
+        #  {'msg_date': '2023-08-25', 'sender': '+994 70 *** ** 27', 'receiver': '+994 51 927 05 68', 'msg_time': '00:39',
+        #   'balance_change': 5.0, 'transaction': '55551881'}),
+        # ('4.jpg',
+        #  {'msg_date': '2023-08-25', 'sender': '+994 55 *** ** 57', 'receiver': '+994 51 927 05 68', 'msg_time': '00:33',
+        #   'balance_change': 50.0, 'transaction': '55551154'}),
+        # ('5.jpg',
+        #  {'msg_date': '2023-08-24', 'sender': '+994 55 *** ** 77', 'receiver': '+994 51 927 05 68', 'msg_time': '22:17',
+        #   'balance_change': 12.0, 'transaction': '55522337'}),
+        # ('wrong1_2.jpg',
+        #  {'msg_date': '2023-08-29', 'sender': '+994 70 *** ** 61', 'receiver': '+994 51 927 05 68', 'msg_time': '16:43',
+        #   'balance_change': 5.0, 'transaction': '56980169'}),
+        # ('wrong1.jpg',
+        #  {'msg_date': '2023-08-29', 'sender': '+994 51 *** ** 01', 'receiver': '+994 51 927 05 68', 'msg_time': '16:25',
+        #   'balance_change': 7.0, 'transaction': '56973239'}),
+        # ('wrong_price.jpg',
+        #  {'msg_date': '2023-08-30', 'sender': '+994 55 *** ** 91', 'receiver': '+994 51 927 05 68', 'msg_time': '13:33',
+        #   'balance_change': 20.0, 'transaction': '57253009'}),
+        # ('wrong_price2.jpg',
+        #  {'msg_date': '2023-08-30', 'sender': '+994 50 *** ** 99', 'receiver': '+994 51 927 05 68', 'msg_time': '13:32',
+        #   'balance_change': 70.0, 'transaction': '57252522'}
+        #  ),
 
     ]
 
 from multiprocessing import Pool
 
 def pool_handler():
-    p = Pool(12)
+    p = Pool(4)
     res = p.map(check_pair, path_test)
     print(res)
     counter = Counter()
