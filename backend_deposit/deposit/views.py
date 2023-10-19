@@ -2,8 +2,10 @@
 import logging
 import time
 import uuid
+from pathlib import Path
 
 from django.conf import settings
+from django.conf.global_settings import MEDIA_ROOT
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -248,12 +250,12 @@ def screen(request: Request):
         if not sms_type:
             # Действие если скрин не по известному шаблону
             logger.debug('скрин не по известному шаблону')
-            BadScreen.objects.create(name=name, worker=worker, image=image)
+            new_screen = BadScreen.objects.create(name=name, worker=worker, image=image)
             logger.debug(f'BadScreen сохранен')
             logger.debug(f'Возвращаем статус 200: not recognize')
-            url = ''
-            send_message_tg(message=f'Пришел хреновый скрин с {worker}: {name}\n{url}', chat_id='6051226224')
-            send_message_tg(message=f'Пришел хреновый скрин с {worker}: {name}\n{url}', chat_id=settings.ADMIN_IDS)
+            path = f'{host}{MEDIA_ROOT}{new_screen.image.url}'
+            send_message_tg(message=f'Пришел хреновый скрин с {worker}: {name}\n{path}', chat_id='6051226224')
+            send_message_tg(message=f'Пришел хреновый скрин с {worker}: {name}\n{path}', chat_id=settings.ADMIN_IDS)
             return HttpResponse(status=status.HTTP_200_OK,
                                 reason='not recognize',
                                 charset='utf-8')
