@@ -49,6 +49,7 @@ def main():
             logger.debug('----')
             logger.debug(f'Общее время: {time.perf_counter() - global_start}')
             logger.debug('----')
+            break
             time.sleep(5)
 
         except Exception as err:
