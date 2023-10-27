@@ -6,7 +6,8 @@ from time import time
 import pytz
 from django.conf import settings
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, String, DateTime, Float, Integer, MetaData
+from sqlalchemy import create_engine, String, DateTime, Float, Integer, MetaData, select, Text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -57,7 +58,16 @@ class Incoming(Base):
         return f'{self.id}. {self.register_date}'
 
 
-def add_incoming_from_asu_to_bot_db(asu_incoming):
+class TrashIncoming(Base):
+    __tablename__ = 'deposit_trashincoming'
+    id: Mapped[int] = mapped_column(primary_key=True,
+                                    autoincrement=True,
+                                    comment='Первичный ключ')
+    register_date: Mapped[time] = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.datetime.now(tz=tz))
+    text: Mapped[str] = mapped_column(Text())
+
+
+def add_incoming_from_asu_to_bot_db(asu_incoming: Incoming):
     """
     Добавляет платеж в базу с ботом на основании распознанного сркина с asu-payme
     """
@@ -88,8 +98,55 @@ def add_incoming_from_asu_to_bot_db(asu_incoming):
             return bot_incoming
     except Exception as err:
         logger.error(f'Ошибка добавления в базу бота: {err}')
-        send_message_tg(message=f'Срин не добавился в базу. ({err})', chat_id='6051226224')
         send_message_tg(message=f'Срин не добавился в базу. ({err})', chat_id=settings.ADMIN_IDS)
+        send_message_tg(message=f'Срин не добавился в базу. ({err})', chat_id='6051226224')
+
+
+def add_pay_to_db2(pay: dict):
+    """
+    Добавляет распознанеое смс в базу2 бота
+    """
+    logger.debug(f'Добавление в базу2 бота {pay}')
+    try:
+        session = Session()
+        with session:
+            response_date = pay.get('response_date')
+            sender = pay.get('sender')
+            pay_sum = pay.get('pay')
+            old_incomings = session.execute(select(Incoming).where(Incoming.response_date == response_date,
+                                                                   Incoming.sender == sender,
+                                                                   Incoming.pay == pay_sum)).all()
+            if old_incomings:
+                logger.warning(f'Транзакция уже есть')
+                return 'duplicate'
+            incoming = Incoming(**pay)
+            session.add(incoming)
+            session.commit()
+            return True
+    except IntegrityError as err:
+        logger.error(err)
+        logger.warning(f'Транзакция уже есть')
+
+    except Exception as err:
+        logger.debug(f'Ошибка при добавлении в базу', exc_info=True)
+        send_message_tg(message=f'Смс не добавилось в базу. ({err})', chat_id=settings.ADMIN_IDS)
+        send_message_tg(message=f'Смс не добавилось в базу. ({err})', chat_id='6051226224')
+
+
+def add_to_trash(text: str):
+    logger.debug(f'Добавление в нераспознанное базы2 бота {text}')
+    try:
+        session = Session()
+        with session:
+            trash = TrashIncoming(text=text)
+            session.add(trash)
+            session.commit()
+            return True
+    except Exception as err:
+        logger.debug(f'Ошибка при добавлении в базу', exc_info=True)
+        send_message_tg(message=f'Смс не добавилось в мусор. ({err})', chat_id=settings.ADMIN_IDS)
+        send_message_tg(message=f'Смс не добавилось в мусор. ({err})', chat_id='6051226224')
+
 
 
 # with Session() as session:

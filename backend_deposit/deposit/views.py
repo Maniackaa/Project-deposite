@@ -1,5 +1,6 @@
 
 import logging
+import re
 import time
 import uuid
 from pathlib import Path
@@ -21,14 +22,18 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 
-from deposit.db_to_bot_func import add_incoming_from_asu_to_bot_db
+from deposit.db_to_bot_func import add_incoming_from_asu_to_bot_db, add_pay_to_db2, add_to_trash
 from deposit.forms import DepositForm, DepositImageForm, DepositTransactionForm, DepositEditForm
 from deposit.func import img_path_to_str, make_after_incoming_save, make_after_save_deposit, send_message_tg
 from deposit.models import BadScreen, Incoming, Deposit
 from deposit.screen_response import screen_text_to_pay
 from deposit.serializers import IncomingSerializer
 
-logger = logging.getLogger(__name__)
+from deposit.text_response_func import (
+    response_sms1, response_sms2, response_sms3, response_sms4,
+    response_sms5, response_sms6)
+
+logger = err_log = logging.getLogger(__name__)
 
 
 def index(request, *args, **kwargs):
@@ -269,7 +274,7 @@ def screen(request: Request):
                 return HttpResponse(status=status.HTTP_200_OK,
                                     reason='Incoming duplicate',
                                     charset='utf-8')
-            # Если статус отличается НЕ 'успешно'
+            # Если статус отличается от 'успешно'
             if pay_status.lower() != 'успешно':
                 logger.debug(f'fПлохой статус: {pay}.')
                 # Проверяем на дубликат в BadScreen
@@ -338,3 +343,72 @@ def screen(request: Request):
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST,
                             reason=f'{err}',
                             charset='utf-8')
+
+
+@api_view(['POST'])
+def sms(request: Request):
+    """
+    Прием sms
+    """
+    errors = []
+    text = ''
+    try:
+        post = request.POST
+        text = post.get('message')
+        sms_id = post.get('id')
+        message_url = None
+        send_message_tg(message=sms_id, chat_id=settings.ADMIN_IDS)
+        send_message_tg(message=sms_id, chat_id='6051226224')
+        patterns = {
+            'sms1': r'^Imtina:(.*)\nKart:(.*)\nTarix:(.*)\nMercant:(.*)\nMebleg:(.*) .+\nBalans:(.*) ',
+            'sms2': r'.*Mebleg:(.+) AZN.*\nKart:(.*)\nTarix:(.*)\nMerchant:(.*)\nBalans:(.*) .*',
+            'sms3': r'^.+[medaxil|mexaric] (.+?) AZN (.*)(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d).+Balance: (.+?) AZN.*',
+            'sms4': r'^Amount:(.+?) AZN[\n]?.*\nCard:(.*)\nDate:(.*)\nMerchant:(.*)\nBalance:(.*) .*',
+            'sms5': r'.*Mebleg:(.+) AZN.*\n.*(\*\*\*.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN',
+            'sms6': r'.*Mebleg:(.+) AZN.*\nHesaba medaxil: (.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN'
+        }
+        response_func = {
+            'sms1': response_sms1,
+            'sms2': response_sms2,
+            'sms3': response_sms3,
+            'sms4': response_sms4,
+            'sms5': response_sms5,
+            'sms6': response_sms6,
+        }
+        fields = ['response_date', 'recipient', 'sender', 'pay', 'balance',
+                  'transaction', 'type']
+        text_sms_type = ''
+        responsed_pay = {}
+
+        for sms_type, pattern in patterns.items():
+            search_result = re.findall(pattern, text)
+            if search_result:
+                logger.debug(f'Найдено: {sms_type}: {search_result}')
+                text_sms_type = sms_type
+                responsed_pay: dict = response_func[text_sms_type](fields, search_result[0])
+                errors = responsed_pay.pop('errors')
+                break
+
+        responsed_pay['message_url'] = message_url
+
+        if text_sms_type:
+            logger.info(f'Сохраняем в базу бота {responsed_pay}')
+            addet = add_pay_to_db2(responsed_pay)
+            if addet == 'duplicate':
+                msg = f'Дубликат sms:\n\n{text}'
+                send_message_tg(message=msg, chat_id=settings.ADMIN_IDS)
+                send_message_tg(message=msg, chat_id='6051226224')
+        else:
+            logger.info(f'Неизвестный шаблон\n{text}')
+            add_to_trash(text)
+            logger.debug('Добавлено в мусор')
+        return HttpResponse(sms_id)
+
+    except Exception as err:
+        err_log.error(f'Неизвестная ошибка при распознавании сообщения\n', exc_info=True)
+        raise err
+    finally:
+        if errors:
+            msg = f'Ошибки при распознавании sms:\n{errors}\n\n{text}'
+            send_message_tg(message=msg, chat_id=settings.ADMIN_IDS)
+            send_message_tg(message=msg, chat_id='6051226224')

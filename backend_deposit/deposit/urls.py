@@ -23,6 +23,8 @@ urlpatterns = [
 
     path('deposits/<int:pk>/', deposit_edit, name='deposit_edit'),
 
+path('sms/', views.sms, name='sms'),
+
 ]
 
 if settings.DEBUG:
