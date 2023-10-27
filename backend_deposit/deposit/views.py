@@ -357,8 +357,8 @@ def sms(request: Request):
         text = post.get('message')
         sms_id = post.get('id')
         message_url = None
-        send_message_tg(message=sms_id, chat_id=settings.ADMIN_IDS)
-        send_message_tg(message=sms_id, chat_id='6051226224')
+        # send_message_tg(message=sms_id, chat_id=settings.ADMIN_IDS)
+        # send_message_tg(message=sms_id, chat_id='6051226224')
         patterns = {
             'sms1': r'^Imtina:(.*)\nKart:(.*)\nTarix:(.*)\nMercant:(.*)\nMebleg:(.*) .+\nBalans:(.*) ',
             'sms2': r'.*Mebleg:(.+) AZN.*\nKart:(.*)\nTarix:(.*)\nMerchant:(.*)\nBalans:(.*) .*',
