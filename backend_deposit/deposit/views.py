@@ -259,8 +259,10 @@ def screen(request: Request):
             logger.debug(f'BadScreen сохранен')
             logger.debug(f'Возвращаем статус 200: not recognize')
             path = f'{host}{MEDIA_ROOT}{new_screen.image.url}'
-            send_message_tg(message=f'Пришел хреновый скрин с {worker}: {name}\n{path}', chat_id='6051226224')
-            send_message_tg(message=f'Пришел хреновый скрин с {worker}: {name}\n{path}', chat_id=settings.ADMIN_IDS)
+            msg = f'Пришел хреновый скрин с {worker}: {name}\n{path}'
+            chat_ids = ['6443007496', '6051226224', settings.ADMIN_IDS]
+            for chat_id in chat_ids:
+                send_message_tg(message=msg, chat_id=chat_id)
             return HttpResponse(status=status.HTTP_200_OK,
                                 reason='not recognize',
                                 charset='utf-8')
