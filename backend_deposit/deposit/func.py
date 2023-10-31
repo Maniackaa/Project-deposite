@@ -201,5 +201,6 @@ def send_message_tg(message: str, chat_id: str = settings.ADMIN_IDS):
                f'chat_id={chat_id}&'
                f'text={message}')
         requests.get(url)
+        logger.debug(f'Сообщение для {chat_id} отправлено')
     except Exception as err:
-        logger.error('err')
+        logger.error(f'Сообщение для {chat_id} НЕ отправлено: {err}')
