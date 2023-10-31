@@ -195,6 +195,7 @@ def make_after_save_deposit(instance):
 def send_message_tg(message: str, chat_id: str = settings.ADMIN_IDS):
     """Отправка сообщения через чат-бот телеграмма"""
     try:
+        logger.debug(f'Отправляем сообщение для {chat_id}')
         url = (f'https://api.telegram.org/'
                f'bot{settings.BOT_TOKEN}/'
                f'sendMessage?'
