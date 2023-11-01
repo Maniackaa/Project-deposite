@@ -113,7 +113,7 @@ services:
       - media:/app/media/
       - ./logs/backend_deposit:/app/logs
       - ./backend_deposit:/app
-    entrypoint: /app/entrypoint.sh
+    entrypoint: bash /app/entrypoint.sh
 
   testocr:
     build: ./backend_deposit
@@ -121,7 +121,7 @@ services:
     env_file: .env
     volumes:
       - ./backend_deposit:/app
-    entrypoint: /app/test_entrypoint.sh
+    entrypoint: bash /app/test_entrypoint.sh
     command: python3 test_response_ocr.py
 
   nginx:
