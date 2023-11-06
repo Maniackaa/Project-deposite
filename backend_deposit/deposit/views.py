@@ -260,8 +260,8 @@ def screen(request: Request):
             logger.debug(f'Возвращаем статус 200: not recognize')
             path = f'{host}{MEDIA_ROOT}{new_screen.image.url}'
             msg = f'Пришел хреновый скрин с {worker}: {name}\n{path}'
-            chat_ids = ['6443007496', '6051226224', settings.ADMIN_IDS]
-            for chat_id in chat_ids:
+            alarm_chat_ids = ['6443007496', '6051226224', settings.ADMIN_IDS]
+            for chat_id in alarm_chat_ids:
                 send_message_tg(message=msg, chat_id=chat_id)
             return HttpResponse(status=status.HTTP_200_OK,
                                 reason='not recognize',
@@ -411,6 +411,7 @@ def sms(request: Request):
         raise err
     finally:
         if errors:
+            alarm_chat_ids = ['6443007496', '6051226224', settings.ADMIN_IDS]
             msg = f'Ошибки при распознавании sms:\n{errors}\n\n{text}'
-            send_message_tg(message=msg, chat_id=settings.ADMIN_IDS)
-            send_message_tg(message=msg, chat_id='6051226224')
+            for chat_id in alarm_chat_ids:
+                send_message_tg(message=msg, chat_id=chat_id)
