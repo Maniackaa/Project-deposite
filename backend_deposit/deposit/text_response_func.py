@@ -99,6 +99,7 @@ def response_sms1(fields: list[str], groups: tuple[str]) -> dict[str, str | floa
         errors = result.get('errors', [])
         errors.append(f'Платеж с суммой {result.get("pay")} не прошел. ({result.get("intima")})')
         result['errors'] = errors
+        result['pay'] = 0
         result.pop('intima')
         return result
     except Exception as err:
