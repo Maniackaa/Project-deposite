@@ -49,7 +49,7 @@ def date_response(data_text: str) -> datetime.datetime:
 # print(date_response('03.10.23 20:54'))
 
 
-def response_operations(fields: list[str], groups: tuple[str], response_fields, sms_type: str):
+def response_operations(fields: list[str], groups: tuple[str], response_fields, sms_type: str) -> dict:
     result = dict.fromkeys(fields)
     result['type'] = sms_type
     errors = []
@@ -78,7 +78,7 @@ def float_digital(string):
 
 def response_sms1(fields: list[str], groups: tuple[str]) -> dict[str, str | float]:
     """
-    Функия распознавания шаблона 1
+    Функия распознавания шаблона 1 (Транзакция не прошла) Возвращаем сумму 0 и ошибку
     :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type']
     :param groups: ('Bloklanmish kart', '4127***6869', '2023-08-22 15:17:19', 'P2P SEND- LEO APP', '29.00', '569.51')
     :return: dict[str, str | float]
@@ -90,10 +90,15 @@ def response_sms1(fields: list[str], groups: tuple[str]) -> dict[str, str | floa
         'sender':           {'pos': 3},
         'pay':              {'pos': 4, 'func': float_digital},
         'balance':          {'pos': 5, 'func': float_digital},
+        'intima':           {'pos': 0}
     }
     sms_type = 'sms1'
     try:
         result = response_operations(fields, groups, response_fields, sms_type)
+        # Обнуление суммы и добавление ошибки
+        errors = result.get('errors', [])
+        errors.append(f'Платеж с суммой {result.get("pay")} не прошел. ({result.get("intima")})')
+        result['errors'] = errors
         return result
     except Exception as err:
         err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
