@@ -92,6 +92,11 @@ async def main():
                 table1_trash_last_num = 0
             else:
                 table1_trash_last_num = int(table1_trash_last_num.decode())
+            table1_trash_offset = r.get('table1_trash_offset')
+            if not table1_trash_offset:
+                table1_trash_offset = 0
+            else:
+                table1_trash_offset = int(table1_trash_offset.decode())
             logger1.debug(f'table1_trash_last_num: {table1_trash_last_num}')
             trashs: list[TrashIncoming] = read_new_trashincomings(table1_trash_last_num)
             trash_rows = []
@@ -102,7 +107,7 @@ async def main():
                 ]
                 trash_rows.append(row)
             if trash_rows:
-                await write_to_table(trash_rows, start_row=table1_trash_last_num + 2, sheets_num=3)
+                await write_to_table(trash_rows, start_row=table1_trash_last_num + 2 - table1_trash_offset, sheets_num=3)
                 r.set('table1_trash_last_num', trash_pk)
                 logger1.debug(f'Записи добавлены за {time.perf_counter() - start}')
 
