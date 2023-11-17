@@ -355,6 +355,16 @@ def sms(request: Request):
     errors = []
     text = ''
     try:
+        host = request.META["HTTP_HOST"]  # получаем адрес сервера
+        user_agent = request.META.get("HTTP_USER_AGENT")  # получаем данные бразера
+        forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
+        path = request.path
+        logger.debug(f'request.data: {request.data},'
+                     f' host: {host},'
+                     f' user_agent: {user_agent},'
+                     f' path: {path},'
+                     f' forwarded: {forwarded}')
+
         post = request.POST
         text = post.get('message')
         sms_id = post.get('id')
@@ -407,6 +417,7 @@ def sms(request: Request):
         return HttpResponse(sms_id)
 
     except Exception as err:
+        logger.error(f'Неизвестная ошибка при распознавании сообщения\n', exc_info=False)
         err_log.error(f'Неизвестная ошибка при распознавании сообщения\n', exc_info=True)
         raise err
     finally:
