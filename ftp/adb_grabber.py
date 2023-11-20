@@ -49,6 +49,7 @@ def main():
         try:
             data = get_file_list(SCREEN_FOLDER.as_posix(), adb_device)
             logger.debug(f'Количество скринов: {len(data)}')
+            logger.debug(str(data))
             if data:
                 file, size = data[0][0], data[0][1]
                 file_path = SCREEN_FOLDER / file

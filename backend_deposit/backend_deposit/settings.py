@@ -186,7 +186,7 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': 'logs/rotate.log',
             'backupCount': 10,
-            'maxBytes': 10 * 1024 * 1024,
+            'maxBytes': 20 * 1024 * 1024,
             'mode': 'a',
             'encoding': 'UTF-8',
             'formatter': 'default_formatter',

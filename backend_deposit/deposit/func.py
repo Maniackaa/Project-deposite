@@ -75,7 +75,7 @@ def response_m10(fields, groups) -> dict[str, str | float]:
     :param groups: ('25.08.2023 01:07', '+994 51 927 05 68', '+994 70 *** ** 27', '55555150', '5.00 м', 'Успешно ')
     :return: dict[str, str | float]
     """
-    logger.debug('Преобразование текста m10 в pay')
+    # logger.debug('Преобразование текста m10 в pay')
     response_fields = {
         'response_date':    {'pos': 0, 'func': date_m10_response},
         'recipient':        {'pos': 1},
