@@ -378,7 +378,7 @@ def sms(request: Request):
             'sms4': r'^Amount:(.+?) AZN[\n]?.*\nCard:(.*)\nDate:(.*)\nMerchant:(.*)[\n]*Balance:(.*) .*',
             'sms5': r'.*Mebleg:(.+) AZN.*\n.*(\*\*\*.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN',
             'sms6': r'.*Mebleg:(.+) AZN.*\nHesaba medaxil: (.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN',
-            'sms7': r'(.+) AZN.*\n(.+)\nBalans (.+) AZN\nKart:(.+)',
+            'sms7': r'(.+) AZN.*\n(.*)\nBalans (.*) AZN\nKart:(.*)',
         }
         response_func = {
             'sms1': response_sms1,
@@ -394,6 +394,7 @@ def sms(request: Request):
         text_sms_type = ''
         responsed_pay = {}
 
+        text = text.replace('\r\n', '\n')
         for sms_type, pattern in patterns.items():
             search_result = re.findall(pattern, text)
             if search_result:
