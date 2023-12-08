@@ -113,9 +113,11 @@ def add_pay_to_db2(pay: dict):
             response_date = pay.get('response_date')
             sender = pay.get('sender')
             pay_sum = pay.get('pay')
+            balance = pay.get('balance')
             old_incomings = session.execute(select(Incoming).where(Incoming.response_date == response_date,
                                                                    Incoming.sender == sender,
-                                                                   Incoming.pay == pay_sum)).all()
+                                                                   Incoming.pay == pay_sum,
+                                                                   Incoming.balance == balance)).all()
             if old_incomings:
                 logger.warning(f'Транзакция уже есть')
                 return 'duplicate'
