@@ -51,7 +51,6 @@ def main():
                     err_log.error(err, exc_info=True)
                     time.sleep(0.1)
 
-            logger.debug('----')
             logger.debug(f'Общее время: {time.perf_counter() - global_start}')
             logger.debug('----')
             time.sleep(0.5)

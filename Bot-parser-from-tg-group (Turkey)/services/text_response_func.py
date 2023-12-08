@@ -130,3 +130,101 @@ def response_sms2(fields, groups) -> dict[str, str | float]:
     except Exception as err:
         err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
         raise err
+
+sms2 = response_sms2(['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type'], ('-1 080.00', '4127*6869', '2023-08-22 15:17:19', 'P2P SEND- LEO APP', '569.51'))
+print(sms2)
+
+def response_sms3(fields, groups) -> dict[str, str | float]:
+    """
+    Функия распознавания шаблона 3
+    :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type']
+    :param groups: ('5.00', '1000020358154 terminal payment ', '2023-08-19 02:30:14', '319.38')
+                   ('10.01', 'ACCOUNT TO ACCOUNT TRANSFER   ', '2023-08-23 00:00:00', '222.96')
+    :return: dict[str, str | float]
+    """
+    response_fields = {
+        'response_date':    {'pos': 2, 'func': date_response},
+        # 'sender':           {'pos': 1, 'func': lambda x: x.split('terminal payment')[0].strip() if 'terminal payment' in x else x},
+        'sender':           {'pos': 1},
+        'pay':              {'pos': 0, 'func': float_digital},
+        'balance':          {'pos': 3, 'func': float_digital},
+    }
+    sms_type = 'sms3'
+    try:
+        result = response_operations(fields, groups, response_fields, sms_type)
+        return result
+    except Exception as err:
+        err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
+        raise err
+
+
+def response_sms4(fields, groups) -> dict[str, str | float]:
+    """
+    Функия распознавания шаблона 4
+    :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'transaction', 'type']
+    :param groups: ('+80.00', '*5559', '2023-09-11 16:15', 'www.birbank.az', '861.00')
+    :return: dict[str, str | float]
+    """
+    logger.debug(f'fields:{fields} groups:{groups}')
+    response_fields = {
+        'response_date':    {'pos': 2, 'func': date_response},
+        'recipient':           {'pos': 1},
+        'sender':             {'pos': 3},
+        'pay':              {'pos': 0, 'func': float_digital},
+        'balance':          {'pos': 4, 'func': float_digital},
+    }
+    sms_type = 'sms4'
+    try:
+        result = response_operations(fields, groups, response_fields, sms_type)
+        return result
+    except Exception as err:
+        err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
+        raise err
+
+
+def response_sms5(fields, groups) -> dict[str, str | float]:
+    """
+    Функия распознавания шаблона 5
+    :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'type']
+    :param groups: ('0.01', '***7680', 'P2P SEND- LEO APP, AZ', '03.10.23 20:54', '1.01 )
+    :return: dict[str, str | float]
+    """
+    logger.debug(f'fields:{fields} groups:{groups}')
+    response_fields = {
+        'response_date':    {'pos': 3, 'func': date_response},
+        'recipient':        {'pos': 1},
+        'sender':           {'pos': 2},
+        'pay':              {'pos': 0, 'func': float_digital},
+        'balance':          {'pos': 4, 'func': float_digital},
+    }
+    sms_type = 'sms5'
+    try:
+        result = response_operations(fields, groups, response_fields, sms_type)
+        return result
+    except Exception as err:
+        err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
+        raise err
+
+
+def response_sms6(fields, groups) -> dict[str, str | float]:
+    """
+    Функия распознавания шаблона 6
+    :param fields: ['response_date', 'recipient', 'sender', 'pay', 'balance', 'type']
+    :param groups: ('0.01', '***7680', 'P2P SEND- LEO APP, AZ', '03.10.23 20:54', '1.01 )
+    :return: dict[str, str | float]
+    """
+    logger.debug(f'fields:{fields} groups:{groups}')
+    response_fields = {
+        'response_date':    {'pos': 3, 'func': date_response},
+        'recipient':        {'pos': 1},
+        'sender':           {'pos': 2},
+        'pay':              {'pos': 0, 'func': float_digital},
+        'balance':          {'pos': 4, 'func': float_digital},
+    }
+    sms_type = 'sms5'
+    try:
+        result = response_operations(fields, groups, response_fields, sms_type)
+        return result
+    except Exception as err:
+        err_log.error(f'Неизвестная ошибка при распознавании: {fields, groups} ({err})')
+        raise err

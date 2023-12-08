@@ -31,7 +31,7 @@ from deposit.serializers import IncomingSerializer
 
 from deposit.text_response_func import (
     response_sms1, response_sms2, response_sms3, response_sms4,
-    response_sms5, response_sms6)
+    response_sms5, response_sms6, response_sms7)
 
 logger = err_log = logging.getLogger(__name__)
 
@@ -375,9 +375,10 @@ def sms(request: Request):
             'sms1': r'^Imtina:(.*)\nKart:(.*)\nTarix:(.*)\nMercant:(.*)\nMebleg:(.*) .+\nBalans:(.*) ',
             'sms2': r'.*Mebleg:(.+) AZN.*\nKart:(.*)\nTarix:(.*)\nMerchant:(.*)\nBalans:(.*) .*',
             'sms3': r'^.+[medaxil|mexaric] (.+?) AZN (.*)(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d).+Balance: (.+?) AZN.*',
-            'sms4': r'^Amount:(.+?) AZN[\n]?.*\nCard:(.*)\nDate:(.*)\nMerchant:(.*)\nBalance:(.*) .*',
+            'sms4': r'^Amount:(.+?) AZN[\n]?.*\nCard:(.*)\nDate:(.*)\nMerchant:(.*)[\n]*Balance:(.*) .*',
             'sms5': r'.*Mebleg:(.+) AZN.*\n.*(\*\*\*.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN',
-            'sms6': r'.*Mebleg:(.+) AZN.*\nHesaba medaxil: (.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN'
+            'sms6': r'.*Mebleg:(.+) AZN.*\nHesaba medaxil: (.*)\nUnvan: (.*)\n(.*)\nBalans: (.*) AZN',
+            'sms7': r'(.+) AZN.*\n(.+)\nBalans (.+) AZN\nKart:(.+)',
         }
         response_func = {
             'sms1': response_sms1,
@@ -386,6 +387,7 @@ def sms(request: Request):
             'sms4': response_sms4,
             'sms5': response_sms5,
             'sms6': response_sms6,
+            'sms7': response_sms7,
         }
         fields = ['response_date', 'recipient', 'sender', 'pay', 'balance',
                   'transaction', 'type']
