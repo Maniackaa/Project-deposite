@@ -24,13 +24,16 @@ async def write_sheets2():
 
 
 async def write_sheets3():
-    logger1.info('Добавляем объемы по картам')
-    cards = await load_range_values(url=conf.tg_bot.TABLE_1, sheets_num=2, diap='A:A')
-    cards = [card[0] for card in cards[1:]]
-    logger.debug(f'Прочитанные карты: {cards}')
-    rows = get_card_volume_rows(cards)
-    logger1.debug(F'Объемы по картам: {rows}')
-    await write_to_table(rows, start_row=2, url=conf.tg_bot.TABLE_1, sheets_num=2, delta_col=1)
+    try:
+        logger1.info('Добавляем объемы по картам')
+        cards = await load_range_values(url=conf.tg_bot.TABLE_1, sheets_num=2, diap='A:A')
+        cards = [card[0] for card in cards[1:]]
+        logger.debug(f'Прочитанные карты: {cards}')
+        rows = get_card_volume_rows(cards)
+        logger1.debug(F'Объемы по картам: {rows}')
+        await write_to_table(rows, start_row=2, url=conf.tg_bot.TABLE_1, sheets_num=2, delta_col=1)
+    except Exception as err:
+        logger1.error(err, exc_info=True)
 
 
 async def jobs():
