@@ -88,8 +88,12 @@ async def main():
                 await write_to_table(rows, start_row=table1_last_num + 2 - table1_offset)
                 r.set('table1_last_num', pk)
                 logger1.debug(f'Записи добавлены за {time.perf_counter() - start}')
+        except Exception as err:
+            logger1.error(f'Ошибка записи table1 sheet 0 {err}')
+            await asyncio.sleep(1)
 
-            # Проверим мусор
+        # Проверим мусор
+        try:
             table1_trash_last_num = r.get('table1_trash_last_num')
             if not table1_trash_last_num:
                 table1_trash_last_num = 0
@@ -114,11 +118,10 @@ async def main():
                 await write_to_table(trash_rows[::-1], start_row=1, from_start=True, sheets_num=3)
                 r.set('table1_trash_last_num', trash_pk)
                 logger1.debug(f'Записи добавлены за {time.perf_counter() - start}')
-
             await asyncio.sleep(1)
 
         except Exception as err:
-            logger1.error(err)
+            logger1.error(f'Ошибка записи table1 sheet 3 {err}')
             await asyncio.sleep(1)
 
 

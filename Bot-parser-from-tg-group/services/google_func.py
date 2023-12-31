@@ -104,11 +104,12 @@ async def write_to_table(rows: list[list], start_row=1, from_start=False, url=co
     except Exception as err:
         logger.error(err)
         err_log.error(err, exc_info=True)
+        raise err
 
 
 async def main():
     rows = [[1, 1, 1]]
-    await write_to_table2(
+    await write_to_table(
         rows, start_row=1, from_start=True,
         url='https://docs.google.com/spreadsheets/d/1cieCIO2JraTNKoeFqFY0a6fCBj0TK2rU4Udp2E4X9Zw/edit#gid=2135403197',
         sheets_num=3,

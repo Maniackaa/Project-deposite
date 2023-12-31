@@ -42,7 +42,7 @@ async def main():
                 table2_last_row = int(table2_last_row.decode())
             logger2.debug(f'table2_last_id: {table2_last_id}')
             start = time.perf_counter()
-            new_outs: list[Incoming] = find_new_out(table2_last_id)[:4000]
+            new_outs: list[Incoming] = find_new_out(table2_last_id)[:2000]
             rows = []
             for new_out in new_outs:
                 pk = new_out.id
@@ -56,7 +56,7 @@ async def main():
                 ]
                 rows.append(row)
             if rows:
-                logger.debug(f'Найдены новые выводы: {rows}')
+                logger.debug(f'Найдены новых выводов: {len(rows)}')
                 await write_to_table(rows, start_row=table2_last_row + 2, url=conf.tg_bot.TABLE_2)
                 r.set('table2_last_id', pk)
                 r.set('table2_last_row', table2_last_row + len(rows))
@@ -74,10 +74,10 @@ if __name__ == '__main__':
     logger2.info('Starting Table writer 2')
     try:
         # r.set('table2_last_id', 0)
-        read_all_out()
-        print('Новые выводы', find_new_out(0))
-        get_out_report_rows()
-        asyncio.run(write_sheets2())
+        # read_all_out()
+        # print('Новые выводы', find_new_out(0))
+        # get_out_report_rows()
+        # asyncio.run(write_sheets2())
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger2.info('Table writer 2 stopped!')
