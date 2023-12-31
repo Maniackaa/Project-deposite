@@ -110,7 +110,8 @@ async def main():
                 ]
                 trash_rows.append(row)
             if trash_rows:
-                await write_to_table(trash_rows, start_row=table1_trash_last_num + 2 - table1_trash_offset, sheets_num=3)
+                # await write_to_table(trash_rows, start_row=table1_trash_last_num + 2 - table1_trash_offset, sheets_num=3)
+                await write_to_table(trash_rows[::-1], start_row=1, from_start=True, sheets_num=3)
                 r.set('table1_trash_last_num', trash_pk)
                 logger1.debug(f'Записи добавлены за {time.perf_counter() - start}')
 
