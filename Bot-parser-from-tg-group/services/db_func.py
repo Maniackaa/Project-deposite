@@ -303,19 +303,26 @@ def get_card_volume_rows(select_cards: list):  # ['4127*4297', '+994 51 927 05 6
         ).group_by(Incoming.recipient)
         results = session.execute(cards).fetchall()
         # [('4127*4297', 7926.64, 319), ('+994 51 927 05 68', 151542.00999999995, 1809), ('4127*6822', 41097.64, 1420)]
-        logger.debug(f'card_volume: {results}')
+        logger.debug(f'card_volume_result: {results}')
         rows = []
         for index_card, card in enumerate(select_cards, 1):
+            # print(index_card, card)
             row = [index_card, card, 0, 0, '-']
             for result in results:
+                # print(result)
                 # ('+994 51 927 05 68', 197.0, 11)
+                if result[3]:
+                    last_date = result[3].strftime('%Y.%m.%d %H:%M')
+                else:
+                    last_date = result[3]
                 if result[0] == card:
                     row[1] = result[0]
                     row[2] = result[1]
                     row[3] = result[2]
-                    row[4] = result[3].strftime('%Y.%m.%d %H:%M')
+                    row[4] = last_date
 
             rows.append(row)
+        # print(rows)
         return rows
     except Exception as err:
         logger1.error('Ошибка при подсчете баланса карт', exc_info=True)

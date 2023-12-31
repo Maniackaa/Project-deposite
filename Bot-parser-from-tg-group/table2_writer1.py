@@ -42,7 +42,7 @@ async def main():
                 table2_last_row = int(table2_last_row.decode())
             logger2.debug(f'table2_last_id: {table2_last_id}')
             start = time.perf_counter()
-            new_outs: list[Incoming] = find_new_out(table2_last_id)
+            new_outs: list[Incoming] = find_new_out(table2_last_id)[:4000]
             rows = []
             for new_out in new_outs:
                 pk = new_out.id
