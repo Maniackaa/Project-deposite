@@ -53,7 +53,7 @@ class DepositEditForm(forms.ModelForm):
         incoming_id = None
         if deposit.confirmed_incoming:
             incoming_id = deposit.confirmed_incoming.id
-        self.fields['confirmed_incoming'].queryset = Incoming.objects.filter(pay=500).order_by('-id') | Incoming.objects.filter(id=incoming_id)
+        self.fields['confirmed_incoming'].queryset = Incoming.objects.filter(pay=deposit.pay_sum).order_by('-id') | Incoming.objects.filter(id=incoming_id)
 
     class Meta:
         model = Deposit
