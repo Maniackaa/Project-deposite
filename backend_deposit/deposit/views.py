@@ -162,7 +162,7 @@ def deposits_list_pending(request):
 def deposit_edit(request, pk):
     deposit_from_pk = get_object_or_404(Deposit, pk=pk)
     template = 'deposit/deposit_edit.html'
-    incomings = Incoming.objects.filter(confirmed_deposit=None).order_by('-id').all()
+    incomings = Incoming.objects.filter(confirmed_deposit=None).filter(pay=deposit_from_pk.pay_sum).order_by('-id').all()
     form = DepositEditForm(data=request.POST or None, files=request.FILES or None,
                            instance=deposit_from_pk,
                            initial={'confirmed_incoming': deposit_from_pk.confirmed_incoming,
