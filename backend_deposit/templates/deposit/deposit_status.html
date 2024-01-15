@@ -12,7 +12,11 @@
                 Ваш депозит № {{deposit.id}}:<br>
                 <b>Сумма:</b> {{deposit.pay_sum}} AZN<br>
 
-                <b>Статус</b>: <span {% if deposit.status = 'approved' %} style="color: #0a53be" {% endif %}>{{deposit.status}}</span><br>
+                {% if deposit.status = 'approved' %}
+                <b>Статус</b>: <span style="color: #00ff7c">{{deposit.status}}</span><br>
+                {% else }}%
+                <b>Статус</b>: <span style="color: #ffd400">{{deposit.status}}</span><br>
+                {% endif %}
                 <b>Транзакция</b>: {{deposit.input_transaction}}<br>
                 <b>Чек:<br></b>
 
