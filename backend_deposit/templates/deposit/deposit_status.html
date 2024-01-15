@@ -7,13 +7,15 @@
         <div class="card">
           <div class="card-header">
             <div class="card-body ">
-              {% if deposit %}
+              {% with deposit.status status %}
+                {% if deposit %}
                 Ваш депозит № {{deposit.id}}:<br>
                 <b>Сумма:</b> {{deposit.pay_sum}} AZN<br>
-                <b {% if deposit.status=='approved' %} style="color: #198754" {% else %}style="color: #198754"{% endif %}>Статус</b>: {{deposit.status}}<br>
+              {% if deposit.status=='approved' %}
+                <b>Статус</b>: <span {% if status %} style="color: #0a53be" {% endif %}>{{deposit.status}}</span><br>
                 <b>Транзакция</b>: {{deposit.input_transaction}}<br>
                 <b>Чек:<br></b>
-
+             {% endwith %}}
               {% else %}
                 Депозит с таким идентификатором не найден
               {% endif %}
