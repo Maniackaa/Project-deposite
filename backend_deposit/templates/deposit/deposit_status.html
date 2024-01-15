@@ -8,7 +8,7 @@
           <div class="card-header">
             <div class="card-body ">
 
-                {% if deposit %}
+<!--                {% if deposit %}-->
                 Ваш депозит № {{deposit.id}}:<br>
                 <b>Сумма:</b> {{deposit.pay_sum}} AZN<br>
 
@@ -20,9 +20,9 @@
                 <b>Транзакция</b>: {{deposit.input_transaction}}<br>
                 <b>Чек:<br></b>
 
-              {% else %}
-                Депозит с таким идентификатором не найден
-              {% endif %}
+<!--              {% else %}-->
+<!--                Депозит с таким идентификатором не найден-->
+<!--              {% endif %}-->
 
               {% if deposit.pay_screen %}
                 <img class="img-thumbnail"  src="/media/{{deposit.pay_screen}}" width="200" height="400">
