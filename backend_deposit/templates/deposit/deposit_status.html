@@ -13,9 +13,9 @@
                 <b>Сумма:</b> {{deposit.pay_sum}} AZN<br>
 
                 {% if deposit.status == 'approved' %}
-                <b>Статус</b>: <span style="color: #00ff7c">{{deposit.status}}</span><br>
+                <b>Статус</b>: <p style="color: #00ff7c">{{deposit.status}}</p><br>
                 {% else }%
-                <b>Статус</b>: <span style="color: #ffd400">{{deposit.status}}</span><br>
+                <b>Статус</b>: <p style="color: #ffd400">{{deposit.status}}</p><br>
                 {% endif %}
                 <b>Статус2</b>: {{deposit.status}}
                 <b>Транзакция</b>: {{deposit.input_transaction}}<br>
