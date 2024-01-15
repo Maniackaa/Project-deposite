@@ -83,14 +83,6 @@ class DepositTransactionForm(forms.ModelForm):
     pay_sum = forms.CharField(widget=forms.HiddenInput)
     input_transaction = forms.IntegerField(required=False, min_value=50_000_000, max_value=99_999_999)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        deposit: Deposit = kwargs.get('instance')
-        incoming_id = None
-        if deposit.confirmed_incoming:
-            incoming_id = deposit.confirmed_incoming.id
-        self.fields['confirmed_incoming'].queryset = Incoming.objects.filter(pay=500) | Incoming.objects.filter(id=incoming_id)
-
     class Meta:
         model = Deposit
         fields = ('uid', 'phone', 'pay_sum', 'uid', 'input_transaction')
