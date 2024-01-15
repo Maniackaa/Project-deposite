@@ -11,15 +11,15 @@
                 {% if deposit %}
                 Ваш депозит № {{deposit.id}}:<br>
                 <b>Сумма:</b> {{deposit.pay_sum}} AZN<br>
-              {% if deposit.status=='approved' %}
-                <b>Статус</b>: <span {% if status %} style="color: #0a53be" {% endif %}>{{deposit.status}}</span><br>
+
+                <b>Статус</b>: <span {% if deposit.status = 'approved' %} style="color: #0a53be" {% endif %}>{{deposit.status}}</span><br>
                 <b>Транзакция</b>: {{deposit.input_transaction}}<br>
                 <b>Чек:<br></b>
-             {% endwith %}}
+
               {% else %}
                 Депозит с таким идентификатором не найден
               {% endif %}
-
+            {% endwith %}}
               {% if deposit.pay_screen %}
                 <img class="img-thumbnail"  src="/media/{{deposit.pay_screen}}" width="200" height="400">
               {% else %}
