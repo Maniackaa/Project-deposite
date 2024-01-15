@@ -195,7 +195,7 @@ def get_day_report_rows():
 
                 list(bad_senders),
                 ['ID, которые пропускаются:'],
-                [str_not_calc_ids],
+                [str_not_calc_ids[:49999]],
                 ['-'],
                 [datetime.datetime.now(tz=tz).strftime('%d.%m.%Y  %H:%M:%S'),	'За день', 'Смена 1', 'Смена 2', 'Смена 3']
             ]
