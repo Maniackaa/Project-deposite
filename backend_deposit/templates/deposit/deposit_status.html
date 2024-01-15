@@ -7,7 +7,7 @@
         <div class="card">
           <div class="card-header">
             <div class="card-body ">
-              {% with deposit.status status %}
+              {% with status=deposit.status %}
                 {% if deposit %}
                 Ваш депозит № {{deposit.id}}:<br>
                 <b>Сумма:</b> {{deposit.pay_sum}} AZN<br>
